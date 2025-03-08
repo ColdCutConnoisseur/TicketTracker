@@ -2,7 +2,7 @@
 
 import os
 import datetime
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 
 from flask import Flask, render_template
@@ -64,7 +64,7 @@ def index():
     closed_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_not(None)), (Inventory.event_date < datetime.datetime.today())).all()  # or event_date > current_date
     closed_headers = ["Event Name", "Total Cost", "Total Proceeds", "Event PnL", "Date Sold"]
 
-    open_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_(None)), (Inventory.event_date >= datetime.datetime.today())).all()
+    open_inventory = Inventory.query.filter(and_(Inventory.sale_payout_date.is_(None)), ((Inventory.event_date >= datetime.datetime.today().date()))).all()
     open_headers = ["Event Name", "Venue", "Event Date", "Qty Purchased", "Total Cost", "Cost Per", "Section", "Row", "Seat", "Notes", "Manual Price Track", "Check Price URL"]
     return render_template('new_index.html',
                            closed_headers=closed_headers,

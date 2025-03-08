@@ -50,7 +50,7 @@ def get_fetch_urls_and_row_data():
 def fetch_prices_and_update_db(fetch_urls_and_rows, pricing_method):
     driver = create_and_return_driver()
 
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, 60)  # NOTE: Keep this wait time high for now, browser may be slow to load
 
     #try:
 
