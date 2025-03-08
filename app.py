@@ -1,0 +1,76 @@
+
+
+import os
+import datetime
+from sqlalchemy import or_
+
+
+from flask import Flask, render_template
+from flask_sqlalchemy import SQLAlchemy
+from flask_bootstrap import Bootstrap
+
+from config import SQLITE_DB_PATH
+
+
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_DB_PATH
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+bootstrap = Bootstrap(app)
+
+class Inventory(db.Model):
+    __tablename__ = 'inventory'
+    event_id = db.Column(db.Integer, primary_key=True)
+    event_name = db.Column(db.String(64))
+    venue = db.Column(db.String(64))
+    event_date = db.Column(db.DateTime)
+    event_time = db.Column(db.Time)
+    date_purchased = db.Column(db.DateTime)
+    qty_purchased = db.Column(db.Numeric)
+    total_cost = db.Column(db.Numeric) #decimal.Decimal
+    cost_per = db.Column(db.Numeric)
+    section = db.Column(db.String(64))
+    row = db.Column(db.String(64))
+    seat = db.Column(db.String(64))
+    sale_payout_date = db.Column(db.DateTime, nullable=True, default=None) #same as is_open --> if no date
+    self_use_qty = db.Column(db.Integer, nullable=True)
+    sale_total_proceeds = db.Column(db.Numeric, nullable=True)
+    sale_marketplace = db.Column(db.String(64), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    manual_price_track = db.Column(db.Float, nullable=True)
+    check_price_url = db.Column(db.Text, nullable=True)
+
+    def __repr__(self):
+        return '<Inventory %r>' % self.event_name
+
+class PriceDatapoint(db.Model):
+    __tablename__ = 'prices'
+    observation_id = db.Column(db.Integer, primary_key=True)
+    observation_timestamp = db.Column(db.Float)
+    event_id = db.Column(db.Integer, db.ForeignKey('inventory.event_id'))
+    section = db.Column(db.String(64))
+    row = db.Column(db.String(64))
+    price = db.Column(db.Numeric)
+    source = db.Column(db.String(64), default="TickPick")
+    source_url = db.Column(db.Text)
+
+
+
+
+@app.route('/')
+def index():
+    closed_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_not(None)), (Inventory.event_date < datetime.datetime.today())).all()  # or event_date > current_date
+    closed_headers = ["Event Name", "Total Cost", "Total Proceeds", "Event PnL", "Date Sold"]
+
+    open_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_(None)), (Inventory.event_date >= datetime.datetime.today())).all()
+    open_headers = ["Event Name", "Venue", "Event Date", "Qty Purchased", "Total Cost", "Cost Per", "Section", "Row", "Seat", "Notes", "Manual Price Track", "Check Price URL"]
+    return render_template('new_index.html',
+                           closed_headers=closed_headers,
+                           closed_inventory=closed_inventory,
+                           open_headers=open_headers,
+                           open_inventory=open_inventory)
+
+
+

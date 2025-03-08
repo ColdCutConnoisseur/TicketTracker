@@ -1,0 +1,45 @@
+event_id,event_name,venue,event_date,event_time,date_purchased,qty_purchased,total_cost,cost_per,section,row,seat,sale_payout_date,self_use_qty,sale_total_proceeds,sale_marketplace,notes,manual_price_track,check_price_url
+,shane_gillis_peoria,peoria_civic_center_peoria_il,01/12/2024,07:00:00 PM,11/08/2023,3,243.55,81.1833333333333,mnflr,e,5;6;7,01/24/24,0,433.5,tickpick,,,
+,shane_gillis_chicago_theater,chicago_theater_chicago_il,03/08/2024,07:00:00 PM,11/09/2023,2,172.66,86.33,mnfl3l,ll,313;315,,2,0,,show with Joe,,
+,shane_gillis_chicago_theater,chicago_theater_chicago_il,03/08/24,07:00:00 PM,11/09/2023,2,148.8,74.4,balc1l,c,117;119,03/20/24,0,527,tickpick,,,
+,king_gizzard_northerly_island,northerly_island_chicago_il,09/01/24,06:30:00 PM,09/13/2023,1,108.3,108.3,pit,ga,ga,,1,0,,,,
+,mark_normand_chicago_theater,chicago_theater_chicago_il,11/09/2024,08:00:00 PM,04/17/2024,2,187.68,93.84,mnf3r,ll,302;303,,2,0,,show with Mikey,,
+,mark_normand_chicago_theater,chicago_theater_chicago_il,11/09/2024,08:00:00 PM,04/18/24,2,201.22,100.61,mnfl3r,ff,402;404,11/09/24,0,268.2,[murph]stubhub,,,
+,sean_paul_greatest_tour_2024,radius_chicago_il,05/15/24,07:00:00 PM,05/09/24,4,112.36,28.09,general_admission_1,ga1,ga1,05/29/24,0,129.2,tickpick,,,
+,sean_paul_greatest_tour_2024,radius_chicago_il,05/15/24,07:00:00 PM,05/09/24,4,112.36,28.09,general_admission_1,ga1,ga1,05/29/24,0,187,tickpick,,,
+,lcd_soundsystem_cw,aragon_ballroom_chicago_il,05/27/24,08:00:00 PM,05/09/24,2,55,27.5,general_admission,ga,ga,05/13/24,0,62.28,[murph]gametime;vivid_seats,,,
+,string_cheese_incident_cw,mgm_music_hall_at_fenway,05/18/24,07:15:00 PM,05/09/24,1.5,37.5,25,general_admission,ga,ga,05/16/24,0,76.5,[murph]stubhub;vivid_seats,,,
+,rodrigo_y_gabriela_cw,murat_egyptian_room_at_old_national_centre,05/16/24,08:00:00 PM,05/09/24,1.5,37.5,25,orch-r,w,3;4;5,05/16/24,0,20.39,[murph]vivid_seats;seatgeek,,,
+,nikki_glaser_netflix_is_a_joke_presents_cw,hollywood_palladium,05/11/24,10:30:00 PM,05/09/24,1,25,25,sec4,p,413,05/11/24,0,63,[murph]vivid_seats,,,
+,joe_russos_almost_dead,stone_pony_summer_stage,05/17/24,05:30:00 PM,05/10/24,2,50,25,general_admission,ga,ga,05/29/24,0,109.7,tickpick,only $47 from tickpick,,
+,tommy_emmanuel,capitol_theatre,05/18/24,08:00:00 PM,05/10/24,1,25,25,balcony_center,k,13,,0,0,,,,
+,mdou_moctar_thalia_hall,thalia_hall_chicago,06/18/24,08:00:00 PM,02/29/24,3,98.7,32.9,general_admission,ga,ga,,1,0,,,,
+,orville_peck_stampede_tour_cw,aragon_ballroom_chicago_il,06/13/24,07:00:00 PM,05/09/24,3,82.5,27.5,general_admission,ga,ga,06/11/24,0,90,[murph]stubhub,,,
+,tyler_childers_mule_pull_24_tour,united_center_chicago_il,06/13/24,07:30:00 PM,10/11/23,2,329.07,164.535,4,16,13;14,06/13/24,0,207,[murph]stubhub,,,
+,tyler_childers_mule_pull_24_tour,united_center_chicago_il,06/13/24,07:30:00 PM,10/11/23,1,191.67,191.67,pit,ga,ga,,1,0,,,,
+,limp_bizkit_loserville_2024,credit_union_one_amphitheatre,07/20/24,07:00:00 PM,05/14/24,2,53.26,26.63,general_admission,ga,ga,07/19/24,0,53.26,,these were billy p tix,,
+,santana_and_counting_crows_cw,empower_federal_credit_union_amphitheater_at_lakeview,07/24/24,07:00:00 PM,05/10/24,2,52.2,26.1,general_admission,ga,ga,07/22/24,0,52.2,[murph]vivid_seats,,,
+,primus_and_coheed_and_cambria,blossom_music_center,08/05/24,07:00:00 PM,05/10/24,2,51.5,25.75,general_admission,ga,ga,08/03/24,0,66.6,[murph]stubhub;vivid_seats,,,
+,hootie_and_the_blowfish_summer_camp_with_trucks_tour_cw,credit_union_one_amphitheatre,08/09/24,07:00:00 PM,05/13/24,2,53.26,26.63,general_admission,ga,ga,08/08/24,0,55.8,[murph]stubhub,,,
+,creed_summer_of_99_tour_cw,credit_union_one_amphitheatre,08/16/24,07:00:00 PM,05/15/24,4,106.52,26.63,general_admission,ga,ga,08/14/24,0,194.4,[murph]stubhub,,,
+,korn,credit_union_one_amphitheatre,09/28/24,05:30:00 PM,05/20/24,1,26.63,26.63,general_admission,ga,ga,09/26/24,0,31.5,[murph]stubhub,,,
+,sturgill_simpson_an_evening_with,salt_shed_chicago_il,10/01/24,07:00:00 PM,06/13/24,4,431.88,107.97,general_admission,ga,ga,10/09/24,2,199.75,tickpick,,,
+,sturgill_simpson_an_evening_with,salt_shed_chicago_il,10/02/24,07:00:00 PM,06/13/24,4,431.88,107.97,general_admission,ga,ga,10/16/24,0,535.5,tickpick,,,
+,purdue_football_season_tickets_24_season,various,06/20/24,12:00:00 PM,06/20/24,1,903.75,903.75,107,25,9;10,08/28/24,0,899.32,[murph]stubhub;gametime,pro-rated at a 25% stake;penn state unsold,,
+,camelback_ranch_spring_training_tickets,various,03/01/2025,01:05:00 PM,10/18/24,12,685.5,57.125,various,various,various,,0,,[murph]stubhub,50/50 split with murph,,
+,pretty_lights_new_years,wintrust_arena_chicago_il,12/31/24,09:00:00 PM,10/19/24,1,105.32,105.32,200,ga,ga,,1,0,,my ticket,,
+,pretty_lights_new_years,wintrust_arena_chicago_il,12/31/24,09:00:00 PM,10/19/24,1,105.32,105.32,200,ga,ga,,1,0,,ben w ticket,,
+,pretty_lights_new_years,wintrust_arena_chicago_il,12/30/24,08:00:00 PM,10/19/24,3,337.59,112.53,100,ga,ga,01/08/25,2,90.1,tickpick,,,
+,amyl_and_the_sniffers_cartoon_darkness_tour,salt_shed_chicago_il,05/08/25,08:00:00 PM,12/05/24,4,200.2,50.05,general_admission,ga,ga,,,,,,108,https://www.tickpick.com/buy-amyl-and-the-sniffers-tickets-the-salt-shed-indoors-chicago-5-8-25-8pm/6784398/?sectionLevels=GA
+,viagra_boys_infinite_anxiety_tour,salt_shed_chicago_il,09/18/25,06:30:00 PM,01/03/25,4,220.68,55.17,general_admission,ga,ga,,,,,,65,https://www.tickpick.com/buy-viagra-boys-tickets-the-salt-shed-outdoors-chicago-9-18-25-6pm/6871440/?sectionLevels=&sroOnly=true
+,fontaines_dc_mission_ballroom_co,mission_ballroom_denver_co,04/22/25,08:00:00 PM,01/06/25,4,220.36,55.09,general_admission,ga,ga,,,,,this looked good on tickpick but GA still avail on AXS,85,https://www.tickpick.com/buy-fontaines-d-c--tickets-the-mission-ballroom-4-22-25-8pm/6789570/?sectionLevels=GA
+,tedeschi_trucks_band_and_govt_mule,northerly_island_chicago_il,09/09/25,06:30:00 PM,01/31/25,4,806.68,201.67,101,h,10;11;12;13,,,,,,250,https://www.tickpick.com/buy-tedeschi-trucks-band-tickets-huntington-bank-pavilion-at-northerly-island-9-9-25-7pm/6946855/?sections=stars:any%7Cinclude:101%7Cexclude:all
+,lainey_wilson_whirlwind_world_tour,allstate_arena_rosemont_il,10/17/25,07:00:00 PM,02/10/25,2,163.56,81.78,211,l,15;16,,,,,158-184 is current range,126,https://www.tickpick.com/buy-lainey-wilson-muscadine-bloodline-maddox-batson-tickets-allstate-arena-10-17-25-7pm/6964707/?sections=stars:any%7Cinclude:211%7Cexclude:all
+,widespread_panic,chicago_theater_chicago_il,06/06/25,08:00:00 PM,02/10/25,2,241.9,120.95,mnfl2l,g,213;215,,,,,,184,https://www.tickpick.com/buy-widespread-panic-tickets-the-chicago-theatre-6-6-25-8pm/6969070/?sections=stars:any%7Cinclude:Main%20Floor%202L%7Cexclude:all
+,sturgill_simpson_who_the_bleep_is_johnny_blue_skies_tour,allstate_arena_rosemont_il,05/09/25,08:00:00 PM,02/24/25,2,245,122.5,111,h,5;6,,,,,,170,https://www.tickpick.com/buy-sturgill-simpson-tickets-allstate-arena-5-9-25-8pm/6989764/?sections=stars:any%7Cinclude:111%7Cexclude:all
+,louis_ck_ridiculous_milwaukee,miller_high_life_theater,09/23/25,07:30:00 PM,02/27/25,2,211.14,105.57,1lc,h,7;8,,,,,,110,
+,louis_ck_ridiculous_austin_city_live,moody_theater,09/10/25,07:30:00 PM,02/27/25,4,500.48,125.12,flr3,g,205;206;207;208,,,,,,183,https://www.tickpick.com/buy-louis-c-k--tickets-acl-live-at-the-moody-theater-9-10-25-7pm/7011016/?sections=stars:any%7Cinclude:Floor%203%7Cexclude:all
+,louis_ck_ridiculous_chicago,chicago_theater_chicago_il,09/25/25,07:30:00 PM,02/27/25,2,229.7,114.85,mnfl3r,kk,314;316,,,,,,210,https://www.tickpick.com/buy-louis-c-k--tickets-the-chicago-theatre-9-25-25-7pm/7011052/?sections=stars:any%7Cinclude:Main%20Floor%203R%7Cexclude:all
+,louis_ck_ridiculous_chicago,chicago_theater_chicago_il,09/25/2025,07:30:00 PM,02/27/25,2,275.12,137.56,mnfl3r,ee,314;316,,,,,,220,https://www.tickpick.com/buy-louis-c-k--tickets-the-chicago-theatre-9-25-25-7pm/7011052/?sections=stars:any%7Cinclude:Main%20Floor%203R%7Cexclude:all
+,louis_ck_ridiculous_chicago,chicago_theater_chicago_il,09/26/2025,07:30:00 PM,02/28/25,2,229.7,114.85,booth,r,3;4,,,,,,150,
+,mark_normand_ya_dont_say,den_theater_chicago_il,03/15/25,05:00:00 PM,03/04/25,2,95,47.5,audience_right_bank,f,4;5,,,,,,,
