@@ -1,6 +1,7 @@
-"""Selenium (uc) script for pulling prices (no API sites)"""
+"""Selenium (uc) script for pulling prices (non-API sites)"""
 
 import sys
+import re
 import time
 
 import undetected_chromedriver as uc
@@ -68,7 +69,7 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
 
     listings_loaded = False
     timeout_counter = 0
-    timeouts_allowed = 6
+    timeouts_allowed = 10
 
     while not listings_loaded:
 
@@ -83,7 +84,7 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
         except:
             print("Listings not loaded yet, waiting...")
             timeout_counter += 1
-            time.sleep(5)
+            time.sleep(1)
 
     listing_elements = listing_container.find_elements(By.CLASS_NAME, "listing")
 
@@ -91,14 +92,17 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
     section_supply = len(listing_elements)
     print(f"Found {section_supply} listings.")
 
+    # Scrape Prices
+    raw_prices = [listing.find_element(By.XPATH, "./label/b[1]").text for listing in listing_elements]
+    raw_prices = [price.replace(",", "") for price in raw_prices]
+    prices = [float(price.replace("$", "")) for price in raw_prices]
+
+    rows = [listing.find_element(By.XPATH, "./div[@class='details']/div/span").text for listing in listing_elements] # Used for non-GA
+    #print(rows)
+
     # NOTE: Logic will differ depending on whether row is 'GA' or not
     if row == 'ga':
         print("Event is GA")
-
-        # Scrape Prices
-        raw_prices = [listing.find_element(By.XPATH, "./label/b[1]").text for listing in listing_elements]
-        raw_prices = [price.replace(",", "") for price in raw_prices]
-        prices = [float(price.replace("$", "")) for price in raw_prices]
 
         if pricing_method == PricingMethod.AVG:
             
@@ -132,14 +136,65 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
     else:
         print("Event is not GA")
 
-def fetch_prices_and_update_db(event_data, pricing_method):
-    driver = create_and_return_driver()
+        # NOTE: No guarantees that 'Row' text will exist!
 
-    wait = WebDriverWait(driver, 12)  # NOTE: Keep this wait time high for now, browser may be slow to load
+        # Match tickets to row
+        matched_prices = []
+        row_regex = r'Row ([A-Z0-9]+)'
+        revised_rows = [m.group(1) for m in [re.search(row_regex, row) for row in rows] if m is not None]
+
+        for p, r in zip(prices, revised_rows):
+            print(f"Price: {p}, Row: {r}")
+
+            if r == row:
+                print("Row Matched")
+                matched_prices.append(p)
+
+        # After checking for matches, check len of matched list
+        if len(matched_prices) < 1:
+            print("No prices matched to row. Populating with section prices instead...")
+            matched_prices = prices
+
+        # And now caclulate avg/min/max/fta etc
+        if pricing_method == PricingMethod.AVG:
+            
+            avg_price = sum(matched_prices) / len(matched_prices)
+            print(f"Average Price: {avg_price}")
+
+            return (section_supply, avg_price)
+        
+        elif pricing_method == PricingMethod.MIN:
+            
+            min_price = min(matched_prices)
+            print(f"Min Price: {min_price}")
+
+            return (section_supply, min_price)
+        
+        elif pricing_method == PricingMethod.MAX:
+            
+            max_price = max(matched_prices)
+            print(f"Max Price: {max_price}")
+
+            return (section_supply, max_price)
+        
+        elif pricing_method == PricingMethod.FTA:
+            
+            first_three_prices = matched_prices[:3]
+            fta_avg = sum(first_three_prices) / len(first_three_prices)
+            print(f"First Three Average Price: ${fta_avg:.2f}")
+
+            return (section_supply, fta_avg)
+
+def fetch_prices_and_update_db(event_data, pricing_method):
+    # driver = create_and_return_driver()  Problem with individual page loads; for time being I'm moving this inside for loop
+
+    # wait = WebDriverWait(driver, 10)  # NOTE: Keep this wait time high for now, browser may be slow to load
 
     #try:
 
     for data_chunk in event_data:
+        driver = create_and_return_driver() # NOTE: This fixed page load issues (see NOTE above)
+        wait = WebDriverWait(driver, 10)
         event_id = data_chunk[0]
         url = data_chunk[1]
         event_section = data_chunk[2]
@@ -156,8 +211,8 @@ def fetch_prices_and_update_db(event_data, pricing_method):
             # Insert data into 'Price' table
 
             check_for_existing_datapoint_and_add_if_necessary(event_id, event_section, event_row, event_pricing, url, section_supply)
-
-    driver.quit()
+        driver.quit()
+    #driver.quit()
 
     #except Exception as e:
         #print(f"An error occurred: {e}")
