@@ -48,13 +48,17 @@ class Inventory(db.Model):
 class PriceDatapoint(db.Model):
     __tablename__ = 'prices'
     observation_id = db.Column(db.Integer, primary_key=True)
-    observation_timestamp = db.Column(db.Float)
+    observation_timestamp = db.Column(db.TIMESTAMP, default=datetime.datetime.now)
     event_id = db.Column(db.Integer, db.ForeignKey('inventory.event_id'))
     section = db.Column(db.String(64))
     row = db.Column(db.String(64))
     price = db.Column(db.Numeric)
     source = db.Column(db.String(64), default="TickPick")
     source_url = db.Column(db.Text)
+    section_inventory_count = db.Column(db.Integer)
+
+    def __repr__(self):
+        return '<PriceDatapoint %r>' % self.price
 
 
 

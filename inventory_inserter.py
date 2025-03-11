@@ -7,7 +7,7 @@ import datetime
 import pandas as pd
 from sqlalchemy import create_engine
 
-from config import SQLITE_DB_PATH
+from db_interface import create_and_return_db_engine
 
 pd.set_option('display.max_columns', None)
 
@@ -59,10 +59,6 @@ def load_inventory_w_pandas(file_path: str) -> pd.DataFrame:
     df["sale_payout_date"] = pd.to_datetime(df["sale_payout_date"], format="mixed")
 
     return df
-
-def create_and_return_db_engine():
-    engine = create_engine(SQLITE_DB_PATH)
-    return engine
 
 def add_inventory_to_db(inv_df: pd.DataFrame) -> None:
     engine = create_and_return_db_engine()

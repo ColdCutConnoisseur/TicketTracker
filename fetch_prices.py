@@ -11,8 +11,7 @@ from selenium.webdriver.common.by import By
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from inventory_inserter import create_and_return_db_engine
-from db_interface import return_current_price_datapoints_for_event
+from db_interface import create_and_return_db_engine, check_for_existing_datapoint_and_add_if_necessary
 from app import Inventory
 
 class NoPricingDataFound(Exception):
@@ -39,21 +38,21 @@ def create_and_return_driver(which_driver=DriverSelection.FIREFOX, run_headless=
         driver = webdriver.Firefox()
     return driver
 
-def get_fetch_ids_urls_and_row_data():
+def fetch_event_data():
     db_engine = create_and_return_db_engine()
 
-    stmt = select(Inventory.event_id, Inventory.check_price_url, Inventory.row).where(Inventory.check_price_url != None)
+    stmt = select(Inventory.event_id, Inventory.check_price_url, Inventory.section, Inventory.row).where(Inventory.check_price_url != None)
 
-    ids_urls_and_rows = []
+    event_data = []
 
     with db_engine.connect() as conn:
         for result in conn.execute(stmt):
-            ids_urls_and_rows.append(list(result))
+            event_data.append(list(result))
 
-    return ids_urls_and_rows
+    return event_data
 
-def fetch_event_pricing_data(driver, event_data, wait, pricing_method):
-    event_id, url, row = event_data
+def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
+    event_id, url, section, row = event_data_chunk
 
     driver.get(url)
 
@@ -69,13 +68,13 @@ def fetch_event_pricing_data(driver, event_data, wait, pricing_method):
 
     listings_loaded = False
     timeout_counter = 0
-    timeouts_allowed = 5
+    timeouts_allowed = 6
 
     while not listings_loaded:
 
         if timeout_counter >= timeouts_allowed:
             #print("Timeouts exceeded. Exiting...")
-            return (event_id, NoSupplyDataFound, NoPricingDataFound)
+            return (NoSupplyDataFound, NoPricingDataFound)
 
         try:
             listing_container.find_element(By.CLASS_NAME, "listing")
@@ -84,7 +83,7 @@ def fetch_event_pricing_data(driver, event_data, wait, pricing_method):
         except:
             print("Listings not loaded yet, waiting...")
             timeout_counter += 1
-            time.sleep(2)
+            time.sleep(5)
 
     listing_elements = listing_container.find_elements(By.CLASS_NAME, "listing")
 
@@ -106,21 +105,21 @@ def fetch_event_pricing_data(driver, event_data, wait, pricing_method):
             avg_price = sum(prices) / len(prices)
             print(f"Average Price: {avg_price}")
 
-            return (event_id, section_supply, avg_price)
+            return (section_supply, avg_price)
         
         elif pricing_method == PricingMethod.MIN:
             
             min_price = min(prices)
             print(f"Min Price: {min_price}")
 
-            return (event_id, section_supply, min_price)
+            return (section_supply, min_price)
         
         elif pricing_method == PricingMethod.MAX:
             
             max_price = max(prices)
             print(f"Max Price: {max_price}")
 
-            return (event_id, section_supply, max_price)
+            return (section_supply, max_price)
         
         elif pricing_method == PricingMethod.FTA:
             
@@ -128,20 +127,25 @@ def fetch_event_pricing_data(driver, event_data, wait, pricing_method):
             fta_avg = sum(first_three_prices) / len(first_three_prices)
             print(f"First Three Average Price: ${fta_avg:.2f}")
 
-            return (event_id, section_supply, fta_avg)
+            return (section_supply, fta_avg)
 
     else:
         print("Event is not GA")
 
-def fetch_prices_and_update_db(fetch_ids_urls_and_rows, pricing_method):
+def fetch_prices_and_update_db(event_data, pricing_method):
     driver = create_and_return_driver()
 
     wait = WebDriverWait(driver, 12)  # NOTE: Keep this wait time high for now, browser may be slow to load
 
     #try:
 
-    for event_data in fetch_ids_urls_and_rows:
-        event_id, section_supply, event_pricing = fetch_event_pricing_data(driver, event_data, wait, pricing_method)
+    for data_chunk in event_data:
+        event_id = data_chunk[0]
+        url = data_chunk[1]
+        event_section = data_chunk[2]
+        event_row = data_chunk[3]
+
+        section_supply, event_pricing = fetch_event_pricing_data(driver, data_chunk, wait, pricing_method)
 
         if section_supply is NoSupplyDataFound or event_pricing is NoPricingDataFound:
             print("No supply or pricing data found. Skipping...")
@@ -151,13 +155,7 @@ def fetch_prices_and_update_db(fetch_ids_urls_and_rows, pricing_method):
             print("Supply and pricing data found. Updating database...")
             # Insert data into 'Price' table
 
-            # TODO: Pickup here
-            print(f"Event ID: {event_id}")
-
-            # DEBUG
-            driver.quit()
-            sys.exit()
-
+            check_for_existing_datapoint_and_add_if_necessary(event_id, event_section, event_row, event_pricing, url, section_supply)
 
     driver.quit()
 
@@ -166,9 +164,9 @@ def fetch_prices_and_update_db(fetch_ids_urls_and_rows, pricing_method):
         #driver.quit()
 
 def run_fetch_process(pricing_method=PricingMethod.AVG):
-    fetch_ids_urls_and_rows = get_fetch_ids_urls_and_row_data()
+    event_data = fetch_event_data()
 
-    fetch_prices_and_update_db(fetch_ids_urls_and_rows, pricing_method)
+    fetch_prices_and_update_db(event_data, pricing_method)
     print("Price fetch process complete.")
 
 
