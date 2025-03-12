@@ -1,11 +1,8 @@
+"""Helpers for setting up the initial 'inventory' table"""
 
-
-import os
 import csv
-import datetime
 
 import pandas as pd
-from sqlalchemy import create_engine
 
 from db_interface import create_and_return_db_engine
 
@@ -26,6 +23,7 @@ def open_and_read_inventory_file(file_path: str) -> list[list]:
 
 
 def load_inventory_w_pandas(file_path: str) -> pd.DataFrame:
+    """type data for use with pandas"""
     types_dict = {
                     "event_id" : 'UInt16',
                     "event_name" : 'string',
@@ -61,15 +59,12 @@ def load_inventory_w_pandas(file_path: str) -> pd.DataFrame:
     return df
 
 def add_inventory_to_db(inv_df: pd.DataFrame) -> None:
+    """insert inventory items"""
     engine = create_and_return_db_engine()
     inv_df.to_sql('inventory', engine, if_exists='append', index=False)
 
 
 if __name__ == "__main__":
-    #inventory = open_and_read_inventory_file("./ticket_inventory.csv")
-
-    #print(inventory)
-
     new_inv = load_inventory_w_pandas("./ticket_inventory.csv")
     add_inventory_to_db(new_inv)
 

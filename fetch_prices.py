@@ -32,6 +32,7 @@ class PricingMethod:
     MAX = "max"
 
 def create_and_return_driver(which_driver=DriverSelection.FIREFOX, run_headless=False):
+    """Create and return driver with driver selection and headless option"""
     if which_driver == DriverSelection.CHROME:
         driver = uc.Chrome(headless=run_headless)
 
@@ -40,6 +41,7 @@ def create_and_return_driver(which_driver=DriverSelection.FIREFOX, run_headless=
     return driver
 
 def fetch_event_data():
+    """DB fetch to get events that have not occurred yet"""
     db_engine = create_and_return_db_engine()
 
     stmt = select(Inventory.event_id, Inventory.check_price_url, Inventory.section, Inventory.row).where(Inventory.check_price_url != None)
@@ -91,6 +93,9 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
     # TODO: Add a 'supply' table in database and track this info as 'section_supply' and consider 'total_event_supply'
     section_supply = len(listing_elements)
     print(f"Found {section_supply} listings.")
+
+    # NOTE: May have to put a sleep here to allow prices to populate
+    # This is another issue I've seen if you're running this on really slow internet
 
     # Scrape Prices
     raw_prices = [listing.find_element(By.XPATH, "./label/b[1]").text for listing in listing_elements]
@@ -185,7 +190,7 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
 
             return (section_supply, fta_avg)
 
-def fetch_prices_and_update_db(event_data, pricing_method):
+def fetch_prices_and_update_db(driver_type, as_headless, event_data, pricing_method):
     # driver = create_and_return_driver()  Problem with individual page loads; for time being I'm moving this inside for loop
 
     # wait = WebDriverWait(driver, 10)  # NOTE: Keep this wait time high for now, browser may be slow to load
@@ -193,7 +198,7 @@ def fetch_prices_and_update_db(event_data, pricing_method):
     #try:
 
     for data_chunk in event_data:
-        driver = create_and_return_driver() # NOTE: This fixed page load issues (see NOTE above)
+        driver = create_and_return_driver(which_driver=driver_type, run_headless=as_headless) # NOTE: This fixed page load issues (see NOTE above)
         wait = WebDriverWait(driver, 10)
         event_id = data_chunk[0]
         url = data_chunk[1]
@@ -218,14 +223,19 @@ def fetch_prices_and_update_db(event_data, pricing_method):
         #print(f"An error occurred: {e}")
         #driver.quit()
 
-def run_fetch_process(pricing_method=PricingMethod.AVG):
+def run_fetch_process(driver_type=DriverSelection.FIREFOX, as_headless=False, pricing_method=PricingMethod.AVG):
+    """Main function to run the fetch process"""
     event_data = fetch_event_data()
 
-    fetch_prices_and_update_db(event_data, pricing_method)
+    fetch_prices_and_update_db(driver_type, as_headless, event_data, pricing_method)
     print("Price fetch process complete.")
 
 
 if __name__ == "__main__":
+    # Config
+    DRIVER_TYPE = DriverSelection.FIREFOX
+    AS_HEADLESS = True
     PRICING_METHOD = PricingMethod.FTA
 
-    run_fetch_process(pricing_method=PRICING_METHOD)
+    # Run
+    run_fetch_process(driver_type=DRIVER_TYPE, as_headless=AS_HEADLESS, pricing_method=PRICING_METHOD)
