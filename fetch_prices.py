@@ -6,6 +6,7 @@ import time
 
 import undetected_chromedriver as uc
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -37,7 +38,12 @@ def create_and_return_driver(which_driver=DriverSelection.FIREFOX, run_headless=
         driver = uc.Chrome(headless=run_headless)
 
     elif which_driver == DriverSelection.FIREFOX:
-        driver = webdriver.Firefox()
+        options = Options()
+
+        if run_headless:
+            options.headless = True
+
+        driver = webdriver.Firefox(options=options)
     return driver
 
 def fetch_event_data():
