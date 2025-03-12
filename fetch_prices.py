@@ -41,7 +41,7 @@ def create_and_return_driver(which_driver=DriverSelection.FIREFOX, run_headless=
         options = Options()
 
         if run_headless:
-            options.headless = True
+            options.add_argument('--headless')
 
         driver = webdriver.Firefox(options=options)
     return driver
