@@ -9,12 +9,12 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
 
-from config import SQLITE_DB_PATH
+from config import MY_DB
 
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_DB_PATH
+app.config['SQLALCHEMY_DATABASE_URI'] = MY_DB
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

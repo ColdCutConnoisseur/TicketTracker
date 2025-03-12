@@ -5,14 +5,14 @@ import datetime
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
-from config import SQLITE_DB_PATH
+from config import MY_DB
 from app import PriceDatapoint
 
 COMMIT_CHANGES = True
 
 
 def create_and_return_db_engine():
-    engine = create_engine(SQLITE_DB_PATH)
+    engine = create_engine(MY_DB)
     return engine
 
 def price_datapoint_exists_for_today(session: Session, event_id: int) -> bool:
