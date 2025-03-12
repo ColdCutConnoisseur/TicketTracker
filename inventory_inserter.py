@@ -63,7 +63,7 @@ def load_inventory_w_pandas(file_path: str) -> pd.DataFrame:
 
     # Now do translations
     df["event_date"] = pd.to_datetime(df["event_date"], format="mixed")
-    df["event_time"] = pd.to_datetime(df["event_time"], format="%H:%M:%S %p").dt.time
+    df["event_time"] = pd.to_datetime(df["event_time"], format="%I:%M:%S.%f").dt.time
     df["date_purchased"] = pd.to_datetime(df["date_purchased"], format="mixed")
     df["sale_payout_date"] = pd.to_datetime(df["sale_payout_date"], format="mixed")
 
