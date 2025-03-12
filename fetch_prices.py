@@ -6,7 +6,8 @@ import time
 
 import undetected_chromedriver as uc
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
+#from selenium.webdriver.firefox.options import Options
+from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -34,16 +35,25 @@ class PricingMethod:
 
 def create_and_return_driver(which_driver=DriverSelection.FIREFOX, run_headless=False):
     """Create and return driver with driver selection and headless option"""
+    """
     if which_driver == DriverSelection.CHROME:
         driver = uc.Chrome(headless=run_headless)
 
     elif which_driver == DriverSelection.FIREFOX:
-        options = Options()
+        print("Running FF Driver")
+        ff_options = Options()
 
         if run_headless:
-            options.add_argument('--headless')
+            #options.add_argument('-headless')
+            ff_options.headless = True
+            print("Running browser headless")
 
-        driver = webdriver.Firefox(options=options)
+        driver = webdriver.Firefox(options=ff_options)
+    return driver
+    """
+    o = FirefoxOptions()
+    o.add_argument("--headless")
+    driver = webdriver.Firefox(options=0)
     return driver
 
 def fetch_event_data():
@@ -205,7 +215,7 @@ def fetch_prices_and_update_db(driver_type, as_headless, event_data, pricing_met
 
     for data_chunk in event_data:
         driver = create_and_return_driver(which_driver=driver_type, run_headless=as_headless) # NOTE: This fixed page load issues (see NOTE above)
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 45)
         event_id = data_chunk[0]
         url = data_chunk[1]
         event_section = data_chunk[2]
