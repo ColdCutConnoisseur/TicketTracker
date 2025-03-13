@@ -6,8 +6,8 @@ import time
 
 import undetected_chromedriver as uc
 from selenium import webdriver
-#from selenium.webdriver.firefox.options import Options
-from selenium.webdriver import FirefoxOptions
+from selenium.webdriver.firefox.options import Options
+#from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -36,25 +36,19 @@ class PricingMethod:
 
 def create_and_return_driver(which_driver=DriverSelection.FIREFOX, run_headless=False):
     """Create and return driver with driver selection and headless option"""
-    """
+    
     if which_driver == DriverSelection.CHROME:
         driver = uc.Chrome(headless=run_headless)
 
     elif which_driver == DriverSelection.FIREFOX:
         print("Running FF Driver")
-        ff_options = Options()
+        options = Options()
 
         if run_headless:
-            #options.add_argument('-headless')
-            ff_options.headless = True
+            options.add_argument('--headless')
             print("Running browser headless")
 
-        driver = webdriver.Firefox(options=ff_options)
-    return driver
-    """
-    o = FirefoxOptions()
-    o.add_argument("--headless")
-    driver = webdriver.Firefox(options=o)
+        driver = webdriver.Firefox(options=options)
     return driver
 
 def fetch_event_data():
@@ -76,10 +70,7 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
 
     driver.get(url)
 
-    print(url)
-
     wait.until(EC.url_to_be(url))
-
     print("Page Successfully Loaded")
 
     # Scrape the price
@@ -88,25 +79,14 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
         print("Listing Container Found")
 
     except TimeoutException:
-        print("Timeout caught!")
+        print("Timeout caught!  This could be cloudflare...")
         print("Taking screenshot...")
         driver.save_screenshot("page_arrival.png")
-        print("Refreshing page and sleeping for 30 secs...")
-        driver.refresh()
-        time.sleep(30)
-        print("Exited sleep.")
-        print("Going to try to find the listing container again...")
-        try:
-            l_c = driver.find_element(By.CSS_SELECTOR, "#listingContainer")
-            print("LC found this time!")
-        except NoSuchElementException:
-            print("NSE Exception caught!")
-        finally:
-            print("Quitting...")
-            driver.quit()
-            sys.exit(0)
+        print("Exiting...")
+        driver.quit()
+        sys.exit(0)
 
-    # BUG: Listing container will be loaded even when listings aren't loaded yet
+    # BUG: There are instances where the listing_container is found, the listings exist, but the prices are not loaded yet
 
     listings_loaded = False
     timeout_counter = 0
@@ -135,16 +115,19 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
 
     # NOTE: May have to put a sleep here to allow prices to populate
     # This is another issue I've seen if you're running this on really slow internet
+    # This also relates to BUG note above
+
+    # Let's just put an arbitrary sleep in here for now
+    time.sleep(5)
 
     # Scrape Prices
     raw_prices = [listing.find_element(By.XPATH, "./label/b[1]").text for listing in listing_elements]
     raw_prices = [price.replace(",", "") for price in raw_prices]
     prices = [float(price.replace("$", "")) for price in raw_prices]
 
-    rows = [listing.find_element(By.XPATH, "./div[@class='details']/div/span").text for listing in listing_elements] # Used for non-GA
-    #print(rows)
+    rows = [listing.find_element(By.XPATH, "./div[@class='details']/div/span").text for listing in listing_elements]
 
-    # NOTE: Logic will differ depending on whether row is 'GA' or not
+    # NOTE: Calculation logic will differ depending on whether row is 'GA' or not
     if row == 'ga':
         print("Event is GA")
 
@@ -180,7 +163,7 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
     else:
         print("Event is not GA")
 
-        # NOTE: No guarantees that 'Row' text will exist!
+        # NOTE: No guarantees that 'Row' text will exist for below regex!
 
         # Match tickets to row
         matched_prices = []
@@ -278,3 +261,8 @@ if __name__ == "__main__":
 
     # Run
     run_fetch_process(driver_type=DRIVER_TYPE, as_headless=AS_HEADLESS, pricing_method=PRICING_METHOD)
+
+    # NOTE:  Where this stands:  UC does not load pages properly when run with browser, it gets flagged for cloudflare in headless,
+    # Firefox works locally, but gets flagged by cloudflare on PA.
+
+    # Seems like proxy or VPN is the only way to get around this.
