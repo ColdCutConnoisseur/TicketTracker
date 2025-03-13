@@ -53,7 +53,7 @@ def create_and_return_driver(which_driver=DriverSelection.FIREFOX, run_headless=
     """
     o = FirefoxOptions()
     o.add_argument("--headless")
-    driver = webdriver.Firefox(options=0)
+    driver = webdriver.Firefox(options=o)
     return driver
 
 def fetch_event_data():
