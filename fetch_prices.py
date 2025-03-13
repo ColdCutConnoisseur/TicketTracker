@@ -11,6 +11,7 @@ from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -75,13 +76,35 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
 
     driver.get(url)
 
+    print(url)
+
     wait.until(EC.url_to_be(url))
 
     print("Page Successfully Loaded")
 
     # Scrape the price
-    listing_container = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#listingContainer")))
-    print("Listing Container Found")
+    try:
+        listing_container = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#listingContainer")))
+        print("Listing Container Found")
+
+    except TimeoutException:
+        print("Timeout caught!")
+        print("Taking screenshot...")
+        driver.save_screenshot("page_arrival.png")
+        print("Refreshing page and sleeping for 30 secs...")
+        driver.refresh()
+        time.sleep(30)
+        print("Exited sleep.")
+        print("Going to try to find the listing container again...")
+        try:
+            l_c = driver.find_element(By.CSS_SELECTOR, "#listingContainer")
+            print("LC found this time!")
+        except NoSuchElementException:
+            print("NSE Exception caught!")
+        finally:
+            print("Quitting...")
+            driver.quit()
+            sys.exit(0)
 
     # BUG: Listing container will be loaded even when listings aren't loaded yet
 
@@ -215,7 +238,7 @@ def fetch_prices_and_update_db(driver_type, as_headless, event_data, pricing_met
 
     for data_chunk in event_data:
         driver = create_and_return_driver(which_driver=driver_type, run_headless=as_headless) # NOTE: This fixed page load issues (see NOTE above)
-        wait = WebDriverWait(driver, 45)
+        wait = WebDriverWait(driver, 90)
         event_id = data_chunk[0]
         url = data_chunk[1]
         event_section = data_chunk[2]

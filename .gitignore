@@ -5,3 +5,4 @@ images/
 test_db.sqlite
 *.csv
 .env
+*.png
