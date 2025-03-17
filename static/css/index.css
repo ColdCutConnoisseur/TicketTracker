@@ -8,3 +8,9 @@ h3 {
     color: black;
     background-color: yellow;
 }
+
+
+table tr:nth-child(even) td{
+    background-color: #eda982;
+    color: green;
+}

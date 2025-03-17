@@ -60,7 +60,22 @@ class PriceDatapoint(db.Model):
     def __repr__(self):
         return '<PriceDatapoint %r>' % self.price
 
+    """
+    def __dict__(self):
+        return {'observation_id': self.observation_id, 'observation_timestamp': self.observation_timestamp, 'event_id': self.event_id, 'section': self.section, 'row': self.row, 'price': self.price, 'source': self.source, 'source_url': self.source_url, 'section_inventory_count': self.section_inventory_count}
+    """
 
+@app.template_filter('formatEventName')
+def _jinja2_filter_event_name(name_text):
+    # Replace underscores
+    name = name_text.replace("_", " ")
+    
+    all_words = name.split(" ")
+
+    capped = [word.upper() if word == 'cw' else word.capitalize() for word in all_words]
+
+    capped = " ".join(capped)
+    return capped
 
 
 @app.route('/')
@@ -69,12 +84,29 @@ def index():
     closed_headers = ["Event Name", "Total Cost", "Total Proceeds", "Event PnL", "Date Sold"]
 
     open_inventory = Inventory.query.filter(and_(Inventory.sale_payout_date.is_(None)), ((Inventory.event_date >= datetime.datetime.today().date()))).all()
-    open_headers = ["Event Name", "Venue", "Event Date", "Qty Purchased", "Total Cost", "Cost Per", "Section", "Row", "Seat", "Notes", "Manual Price Track", "Check Price URL"]
+
+    # Get info for price and supply charts
+    open_event_ids = [event.event_id for event in open_inventory]
+    #print(open_event_ids)
+    
+    # Pull price data for open events
+    open_event_dps = PriceDatapoint.query.filter(PriceDatapoint.event_id.in_(open_event_ids)).all()
+    #print(open_event_dps)
+
+    # Assert that datapoints are sorted by date
+    open_event_dps.sort(key=lambda x: x.observation_timestamp)
+
+    # Try as dict for javascript charting / sorting
+    open_event_dps = {dp.observation_id : [dp.event_id, dp.price, dp.observation_timestamp] for dp in open_event_dps}
+
+    open_headers = ["Event Name", "Venue", "Event Date", "Qty Purchased", "Total Cost", "Cost Per", "Section", "Row", "Seat", "Notes", "Price Chart"]
     return render_template('new_index.html',
                            closed_headers=closed_headers,
                            closed_inventory=closed_inventory,
                            open_headers=open_headers,
-                           open_inventory=open_inventory)
+                           open_inventory=open_inventory,
+                           open_event_ids=open_event_ids,
+                           open_event_dps=open_event_dps)
 
 
 
