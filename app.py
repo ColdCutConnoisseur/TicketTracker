@@ -80,26 +80,26 @@ def _jinja2_filter_event_name(name_text):
 
 @app.route('/')
 def index():
-    closed_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_not(None)), (Inventory.event_date < datetime.datetime.today())).all()  # or event_date > current_date
+    closed_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_not(None), Inventory.event_date < datetime.datetime.today())).all()
     closed_headers = ["Event Name", "Total Cost", "Total Proceeds", "Event PnL", "Date Sold"]
 
     open_inventory = Inventory.query.filter(and_(Inventory.sale_payout_date.is_(None)), ((Inventory.event_date >= datetime.datetime.today().date()))).all()
+    # Sort Open Inventory to Alert to upcoming events
+    open_inventory.sort(key=lambda x: x.event_date)
 
     # Get info for price and supply charts
     open_event_ids = [event.event_id for event in open_inventory]
-    #print(open_event_ids)
     
     # Pull price data for open events
     open_event_dps = PriceDatapoint.query.filter(PriceDatapoint.event_id.in_(open_event_ids)).all()
-    #print(open_event_dps)
 
     # Assert that datapoints are sorted by date
     open_event_dps.sort(key=lambda x: x.observation_timestamp)
 
     # Try as dict for javascript charting / sorting
-    open_event_dps = {dp.observation_id : [dp.event_id, dp.price, dp.observation_timestamp] for dp in open_event_dps}
+    open_event_dps = {dp.observation_id : [dp.event_id, dp.price, dp.observation_timestamp, dp.section_inventory_count] for dp in open_event_dps}
 
-    open_headers = ["Event Name", "Venue", "Event Date", "Qty Purchased", "Total Cost", "Cost Per", "Section", "Row", "Seat", "Notes", "Price Chart"]
+    open_headers = ["Event Name", "Venue", "Event Date", "Qty Purchased", "Total Cost", "Cost Per", "Section", "Row", "Seat", "Notes", "Price Chart", "Supply Chart"]
     return render_template('new_index.html',
                            closed_headers=closed_headers,
                            closed_inventory=closed_inventory,

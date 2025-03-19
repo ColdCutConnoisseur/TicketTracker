@@ -59,7 +59,12 @@
               {% else %}
                 <td style="color: red;">{{ '-${0:0.2f}'.format(profit | abs) }}</td>
               {% endif %}
+
+              {% if c_inv.sale_payout_date is none %}
+              <td>Not Sold</td>
+              {% else %}
               <td>{{ c_inv.sale_payout_date.strftime('%Y-%m-%d') }}</td>
+              {% endif %}
             </tr>
           {% endfor %}
         </tbody>
@@ -103,8 +108,14 @@
               <!--<td>{{ c_inv.manual_price_track }}</td>
               <td>{{ c_inv.check_price_url }}</td>-->
               <td>
-                <div style="height: 400px; width: 600px;">
+                <button class="btn btn-primary" onclick="showPriceChart({{ c_inv.event_id }}, this);">Show Price Chart</button>
+                <div style="height: 400px; width: 600px; display: none;" id="priceChartParent-{{ c_inv.event_id }}">
                   <canvas id="priceChart-{{ c_inv.event_id }}"></canvas>
+                </div>
+              </td>
+              <td>
+                <div style="height: 400px; width: 600px;">
+                  <canvas id="supplyChart-{{ c_inv.event_id }}"></canvas>
                 </div>
               </td>
             </tr>
@@ -189,20 +200,23 @@
         const currentID = openEventIds[i];
         const eventPrices = [];
         const eventDates = [];
+        const eventSupply = [];
 
         Object.values(openEventDps).forEach((datapoint) => {
             var currentObsId = datapoint[0];
             var currentPrice = datapoint[1];
             var currentTime = datapoint[2];
+            var currentSupply = datapoint[3];
 
             if (currentObsId == currentID) {
                 eventPrices.push(currentPrice);
                 eventDates.push(currentTime);
+                eventSupply.push(currentSupply);
             }
                 
         });
 
-        openEventGroups[currentID] = [eventPrices, eventDates];    
+        openEventGroups[currentID] = [eventPrices, eventDates, eventSupply];    
     }
 
     // Create chart for each event
@@ -211,9 +225,11 @@
         const currentEventDps = openEventGroups[currentID];
 
         const chartID = 'priceChart-' + currentID;
+        const supplyChartID = 'supplyChart-' + currentID;
         
         const eventPrices = currentEventDps[0];
         const eventLabels = currentEventDps[1];
+        const eventSupply = currentEventDps[2];
 
         const data = {
             labels: eventLabels,
@@ -222,6 +238,16 @@
                 backgroundColor: 'rgb(255, 99, 132)',
                 borderColor: 'rgb(255, 99, 132)',
                 data: eventPrices,
+            }]
+        };
+
+        const supplyData = {
+            labels: eventLabels,
+            datasets: [{
+                label: 'Section Supply',
+                backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: eventSupply,
             }]
         };
 
@@ -248,11 +274,56 @@
             }
             };
 
+          const supplyConfig = {
+            type: 'line',
+            data: supplyData,
+            options: { 
+              maintainAspectRatio: false,
+              scales: {
+                x: {
+                  //type: 'time',
+                  //time: {
+                  //  unit: 'day',
+                  //  unitStepSize: 1,
+                  //  displayFormats: {
+                  //    day: 'MMM D'
+                  //  }
+                  //}
+                },
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }
+            };
+
         const newChart = new Chart(
             document.getElementById(chartID),
             config
         );
+
+        const newSupplyChart = new Chart(
+            document.getElementById(supplyChartID),
+            supplyConfig
+        );
     }
+</script>
+
+<script>
+  function showPriceChart(index, buttonElement) {
+    const chartId = "priceChartParent-" + index;
+    const chartParentElement = document.getElementById(chartId);
+
+    // If hidden, show & change button text
+    if (chartParentElement.style.display == 'none') {
+        chartParentElement.style.display = 'block';
+        buttonElement.innerText = "Hide Price Chart";
+    }
+    else {
+        chartParentElement.style.display = 'none';
+        buttonElement.innerText = "Show Price Chart";
+    }
+  }
 </script>
 
 <!--
