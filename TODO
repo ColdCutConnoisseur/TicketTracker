@@ -1,0 +1,7 @@
+
+
+[ ] Problem that was overlooked during development:  Supply numbers are just the number of individual ticket listings--they don't account
+    for offered quantity (i.e There may be 25 individual listers but even one of the listers might be offering 30 tickets).
+    current logic will return 25 as the supply count
+
+[ ] I would like to color format pricing and supply chart series to reflect a tick up / tick down/ unchanged (green, red, grey)
