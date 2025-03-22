@@ -68,6 +68,8 @@ def fetch_event_data():
 def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
     event_id, url, section, row = event_data_chunk
 
+    print(f"Fetching event pricing for event:  << {event_id} >>...")
+
     driver.get(url)
 
     wait.until(EC.url_to_be(url))
@@ -118,7 +120,7 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
     # This also relates to BUG note above
 
     # Let's just put an arbitrary sleep in here for now
-    time.sleep(5)
+    time.sleep(3)  # Let's try 3 here (was 5)
 
     # Scrape Prices
     raw_prices = [listing.find_element(By.XPATH, "./label/b[1]").text for listing in listing_elements]
@@ -173,7 +175,7 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
         for p, r in zip(prices, revised_rows):
             print(f"Price: {p}, Row: {r}")
 
-            if r == row:
+            if r.lower() == row.lower():  # Standardize
                 print("Row Matched")
                 matched_prices.append(p)
 
