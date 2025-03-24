@@ -1,4 +1,4 @@
-
+"""Flask app -- Database schema and creation, main dashboard view, and a custom jinja filter"""
 
 import os
 import datetime
@@ -69,11 +69,8 @@ class PriceDatapoint(db.Model):
 def _jinja2_filter_event_name(name_text):
     # Replace underscores
     name = name_text.replace("_", " ")
-    
     all_words = name.split(" ")
-
     capped = [word.upper() if word == 'cw' else word.capitalize() for word in all_words]
-
     capped = " ".join(capped)
     return capped
 

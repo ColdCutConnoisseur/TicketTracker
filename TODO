@@ -5,3 +5,8 @@
     current logic will return 25 as the supply count
 
 [ ] I would like to color format pricing and supply chart series to reflect a tick up / tick down/ unchanged (green, red, grey)
+
+[ ] Logic for checking whether or not a datapoint exists for today's date comes after the scrape for that datapoint.  It would make way more
+     sense to run this check prior to taking the time to run the scrape.
+
+     

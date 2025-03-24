@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from db_interface import create_and_return_db_engine, check_for_existing_datapoint_and_add_if_necessary
 from app import Inventory
 
+
 class NoPricingDataFound(Exception):
     pass
 
@@ -34,8 +35,9 @@ class PricingMethod:
     MIN = "min"
     MAX = "max"
 
+
 def create_and_return_driver(which_driver=DriverSelection.FIREFOX, run_headless=False):
-    """Create and return driver with driver selection and headless option"""
+    """Create and return selected driver and setting headless option"""
     
     if which_driver == DriverSelection.CHROME:
         driver = uc.Chrome(headless=run_headless)
@@ -49,6 +51,7 @@ def create_and_return_driver(which_driver=DriverSelection.FIREFOX, run_headless=
             print("Running browser headless")
 
         driver = webdriver.Firefox(options=options)
+
     return driver
 
 def fetch_event_data():
@@ -65,9 +68,24 @@ def fetch_event_data():
 
     return event_data
 
-def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
-    event_id, url, section, row = event_data_chunk
+def look_for_and_return_listing_container(driver, wait):
+    try:
+        listing_container = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#listingContainer")))
+        print("Listing Container Found")
+        return listing_container
 
+    except TimeoutException:
+        print("Timeout caught!  This could be cloudflare...")
+        print("Taking screenshot...")
+        driver.save_screenshot("page_arrival.png")
+        print("Screenshot saved!")
+        print("Exiting...")
+        driver.quit()
+        sys.exit(0)
+
+def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
+    # TODO: This is a gimungo function -- Clean it up!!
+    event_id, url, section, row = event_data_chunk
     print(f"Fetching event pricing for event:  << {event_id} >>...")
 
     driver.get(url)
@@ -75,29 +93,16 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
     wait.until(EC.url_to_be(url))
     print("Page Successfully Loaded")
 
-    # Scrape the price
-    try:
-        listing_container = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#listingContainer")))
-        print("Listing Container Found")
-
-    except TimeoutException:
-        print("Timeout caught!  This could be cloudflare...")
-        print("Taking screenshot...")
-        driver.save_screenshot("page_arrival.png")
-        print("Exiting...")
-        driver.quit()
-        sys.exit(0)
-
-    # BUG: There are instances where the listing_container is found, the listings exist, but the prices are not loaded yet
+    listing_container = look_for_and_return_listing_container(driver, wait)
 
     listings_loaded = False
     timeout_counter = 0
-    timeouts_allowed = 10
+    timeouts_allowed = 6
 
     while not listings_loaded:
 
         if timeout_counter >= timeouts_allowed:
-            #print("Timeouts exceeded. Exiting...")
+            print("Timeouts exceeded. Exiting...")
             return (NoSupplyDataFound, NoPricingDataFound)
 
         try:
@@ -107,20 +112,28 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
         except:
             print("Listings not loaded yet, waiting...")
             timeout_counter += 1
-            time.sleep(1)
+            time.sleep(4)
+
+    # BUG: There are instances where the listing_container is found, the listings exist, but the prices are not loaded yet
+    # NOTE: this still exists on slow connections!
+
+    print("Sleeping to allow prices to populate...")
+    time.sleep(5)  # Another arbitrary sleep -- hope that prices populate in listings
+    print("Sleep exited.")
 
     listing_elements = listing_container.find_elements(By.CLASS_NAME, "listing")
 
     # TODO: Add a 'supply' table in database and track this info as 'section_supply' and consider 'total_event_supply'
-    section_supply = len(listing_elements)
-    print(f"Found {section_supply} listings.")
+    # NOTE: This was originally an idea but has been implemented somewhat by tracking supply info in the pricing table for time being
+    listings_count = len(listing_elements)
+    print(f"Found {listings_count} individual listings.")
 
-    # NOTE: May have to put a sleep here to allow prices to populate
-    # This is another issue I've seen if you're running this on really slow internet
-    # This also relates to BUG note above
+    # Get number of tickets available per listing
+    raw_quantities = [listing.find_element(By.XPATH, "./div[1]/select/option").get_attribute("value") for listing in listing elements]
+    quantities_as_int = [int(q) for q in raw_quantities]
+    section_supply = sum(quantities_as_int)
 
-    # Let's just put an arbitrary sleep in here for now
-    time.sleep(3)  # Let's try 3 here (was 5)
+    print(f"Section supply: {section_supply}")
 
     # Scrape Prices
     raw_prices = [listing.find_element(By.XPATH, "./label/b[1]").text for listing in listing_elements]
@@ -215,19 +228,16 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
             return (section_supply, fta_avg)
 
 def fetch_prices_and_update_db(driver_type, as_headless, event_data, pricing_method):
-    # driver = create_and_return_driver()  Problem with individual page loads; for time being I'm moving this inside for loop
-
-    # wait = WebDriverWait(driver, 10)  # NOTE: Keep this wait time high for now, browser may be slow to load
-
-    #try:
-
     for data_chunk in event_data:
-        driver = create_and_return_driver(which_driver=driver_type, run_headless=as_headless) # NOTE: This fixed page load issues (see NOTE above)
+        driver = create_and_return_driver(which_driver=driver_type, run_headless=as_headless)
         wait = WebDriverWait(driver, 90)
         event_id = data_chunk[0]
         url = data_chunk[1]
         event_section = data_chunk[2]
         event_row = data_chunk[3]
+
+        # TODO: To save time, run the insert checks here
+        # A.k.a if a datapoint already exists for today, skip that event scrape
 
         section_supply, event_pricing = fetch_event_pricing_data(driver, data_chunk, wait, pricing_method)
 
@@ -238,19 +248,14 @@ def fetch_prices_and_update_db(driver_type, as_headless, event_data, pricing_met
         else:
             print("Supply and pricing data found. Updating database...")
             # Insert data into 'Price' table
-
+            # TODO: Take check logic from this function for above TODO
             check_for_existing_datapoint_and_add_if_necessary(event_id, event_section, event_row, event_pricing, url, section_supply)
-        driver.quit()
-    #driver.quit()
 
-    #except Exception as e:
-        #print(f"An error occurred: {e}")
-        #driver.quit()
+        driver.quit()
 
 def run_fetch_process(driver_type=DriverSelection.FIREFOX, as_headless=False, pricing_method=PricingMethod.AVG):
-    """Main function to run the fetch process"""
+    """Main function to run the fetch process--get data then insert it"""
     event_data = fetch_event_data()
-
     fetch_prices_and_update_db(driver_type, as_headless, event_data, pricing_method)
     print("Price fetch process complete.")
 
@@ -267,4 +272,4 @@ if __name__ == "__main__":
     # NOTE:  Where this stands:  UC does not load pages properly when run with browser, it gets flagged for cloudflare in headless,
     # Firefox works locally, but gets flagged by cloudflare on PA.
 
-    # Seems like proxy or VPN is the only way to get around this.
+    # Seems like proxy is the only way to get around this -- not willing to put in that effort at this point

@@ -1,7 +1,6 @@
-
+"""DB path and connection config"""
 
 import os
-
 
 from dotenv import load_dotenv
 
