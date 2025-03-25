@@ -4,13 +4,45 @@
 
 
 
-h3 {
+h3{
     color: black;
     background-color: yellow;
 }
 
 
-table tr:nth-child(even) td{
-    background-color: #eda982;
-    color: green;
+tbody tr:nth-child(even) td{
+    background-color: #f7e2d5;
+    color: rgb(56, 45, 38);
 }
+
+tbody tr:nth-child(even) th{
+    background-color: #f7e2d5;
+    color: rgb(56, 45, 38);
+}
+
+#open-inventory-tab.active {
+    background-color: purple;
+    color: white;
+}
+
+#open-inventory-table-container thead th {
+    background-color: purple;
+    color: white;
+}
+
+#open-inventory-table-container tbody td {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    font-size: tiny;
+    vertical-align: middle;
+    font-family:Arial, Helvetica, sans-serif;       /*'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;*/
+}
+
+#open-inventory-table-container tbody th {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    font-size: small;
+    vertical-align: middle;
+    font-family: Arial, Helvetica, sans-serif;
+}
+

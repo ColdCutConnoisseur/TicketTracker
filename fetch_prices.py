@@ -129,7 +129,7 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
     print(f"Found {listings_count} individual listings.")
 
     # Get number of tickets available per listing
-    raw_quantities = [listing.find_element(By.XPATH, "./div[1]/select/option").get_attribute("value") for listing in listing elements]
+    raw_quantities = [listing.find_element(By.XPATH, "./div[1]/select/option").get_attribute("value") for listing in listing_elements]
     quantities_as_int = [int(q) for q in raw_quantities]
     section_supply = sum(quantities_as_int)
 

@@ -74,6 +74,41 @@ def _jinja2_filter_event_name(name_text):
     capped = " ".join(capped)
     return capped
 
+@app.template_filter('dollarFormat')
+def _jinja2_format_for_dollar_amount(number):
+    if not number:
+        return ''
+    
+    else:
+        if number >= 0:
+            return f"${number:.2f}"
+        
+        else:
+            return f"-${abs(number):.2f}"
+
+def create_event_last_pricing_supply_mapping(open_event_ids):
+    # TODO: Adjust for retrieval of first two records (this will help keep track of day-to-day upticks / downticks)
+    mapping = {}
+
+    for match_id in open_event_ids:
+        
+        pds = PriceDatapoint.query.filter(PriceDatapoint.event_id==match_id).order_by(
+                                 PriceDatapoint.observation_timestamp.desc()).limit(2).all()
+
+        if pds:
+            pd_today, pd_yesterday = pds
+            price_uptick = pd_today.price > pd_yesterday.price
+            supply_uptick = pd_today.section_inventory_count > pd_yesterday.section_inventory_count
+
+            price_supply_data = [pd_today.price, pd_today.section_inventory_count, price_uptick, supply_uptick]
+
+        else:
+            price_supply_data = [None, None, None, None]
+        
+        mapping[match_id] = price_supply_data
+
+    return mapping
+
 
 @app.route('/')
 def index():
@@ -96,14 +131,19 @@ def index():
     # Try as dict for javascript charting / sorting
     open_event_dps = {dp.observation_id : [dp.event_id, dp.price, dp.observation_timestamp, dp.section_inventory_count] for dp in open_event_dps}
 
-    open_headers = ["Event Name", "Venue", "Event Date", "Qty Purchased", "Total Cost", "Cost Per", "Section", "Row", "Seat", "Notes", "Price Chart", "Supply Chart"]
+    # Get Last Price & Supply Observations
+    price_supply_mapping = create_event_last_pricing_supply_mapping(open_event_ids)
+
+    open_headers = ["Event Name", "Venue", "Event Date", "Qty Purchased", "Total Cost", "Cost Per", "Section", "Row", "Seat", "Notes", "Last Px", "Supply", "Price Chart", "Supply Chart"]
+    
     return render_template('new_index.html',
                            closed_headers=closed_headers,
                            closed_inventory=closed_inventory,
                            open_headers=open_headers,
                            open_inventory=open_inventory,
                            open_event_ids=open_event_ids,
-                           open_event_dps=open_event_dps)
+                           open_event_dps=open_event_dps,
+                           price_supply_mapping=price_supply_mapping)
 
 
 
