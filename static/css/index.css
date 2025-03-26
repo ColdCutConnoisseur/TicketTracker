@@ -1,21 +1,26 @@
 
+:root {
+    --dark-green-color : #5ba37e;
+    --light-green-color: #9fceb6;
+    --dark-orange:  #fc9105;
+    --light-grey: #a5a29f;
+}
 
 
 
 
-
-h3{
+h3 {
     color: black;
     background-color: yellow;
 }
 
 
-tbody tr:nth-child(even) td{
+tbody tr:nth-child(even) td {
     background-color: #f7e2d5;
     color: rgb(56, 45, 38);
 }
 
-tbody tr:nth-child(even) th{
+tbody tr:nth-child(even) th {
     background-color: #f7e2d5;
     color: rgb(56, 45, 38);
 }
@@ -46,3 +51,16 @@ tbody tr:nth-child(even) th{
     font-family: Arial, Helvetica, sans-serif;
 }
 
+#open-inventory-table-container tbody th {
+    margin-top: 125px;
+    border-radius: 8px 0px 0px 8px;
+}
+
+
+#open-inventory-table-container tbody tr:nth-child(even) th {
+    background-color: var(--dark-orange);
+}
+
+#open-inventory-table-container tbody tr:nth-child(odd) th {
+    background-color: var(--light-grey);
+}
