@@ -5,12 +5,16 @@
 
 {% block head %}
 {{ super() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 {% endblock %}
 
 {% block styles %}
 {{ super() }}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<!-- Bootstrap Datepicker CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css" rel="stylesheet">
+<!-- Bootstrap Timepicker CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/css/bootstrap-timepicker.min.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/index.css') }}">
 {% endblock %}
 
@@ -147,7 +151,60 @@
 
 
   <div class="tab-pane" id="editor" role="tabpanel" aria-labelledby="editor-tab">
-    <h3>Coming soon...(maybe)</h3>
+    <h3>Create Inventory Item</h3>
+
+      <form id="add-inventory-form">
+        
+        <!--Event Name-->
+        <div class="form-group">
+          <label for="add-eventNameInput">Event Name</label>
+          <input type="text" class="form-control" id="add-eventNameInput">
+        </div>
+
+        <!--Venue Name-->
+        <div class="form-group">
+          <label for="add-venueNameInput">Venue Name</label>
+          <input type="text" class="form-control" id="add-venueNameInput">
+        </div>
+
+        <!--Event Date -->
+        <div class="form-group">
+            <label for="add-eventDateDatepicker">Event Date:</label>
+            <input type="text" class="form-control" id="add-eventDateDatepicker" placeholder="Pick a date">
+        </div>
+
+        <!--Event Time-->
+        <div class="form-group">
+          <label for="add-eventTimeTimepicker">Event Time:</label>
+          <input type="text" class="form-control" id="add-eventTimeTimepicker" placeholder="Pick a time">
+        </div>
+
+        <!--Date Purchased-->
+        <div class="form-group">
+          <label for="add-datePurchasedDatepicker">Purchased Date:</label>
+          <input type="text" class="form-control" id="add-datePurchasedDatepicker" placeholder="Pick a date">
+        </div>
+  
+        <!--Notes-->
+        <div class="form-group">
+          <label for="add-eventNotes">Notes</label>
+          <textarea class="form-control" id="add-eventNotes" rows="4"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add Inventory</button>
+      </form>
+
+    <h3>Update Inventory Item</h3>
+
+    <h3>Delete Inventory Item</h3>
+
+    <h3>Bulk Insert From File</h3>
+      <form>
+        <div class="form-group">
+          <label for="bulkAddFileDialog">Bulk Insert File</label>
+          <input type="file" class="form-control-file" id="bulkAddFileDialog">
+        </div>
+      </form>
 
   </div>
 
@@ -195,8 +252,51 @@
 
 {% block scripts %}
 {{ super() }}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap 5.3.3 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='scripts/tabbable.js') }}"></script>
+
+<!-- Bootstrap Datepicker JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
+
+<!-- Bootstrap Timepicker JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/js/bootstrap-timepicker.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Include Chart.js Date Adapter with date-fns (version 1.x)
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@1.0.0/dist/chartjs-adapter-date-fns.min.js"></script>
+-->
+<!-- Include date-fns (version 2.x)
+<script src="https://cdn.jsdelivr.net/npm/date-fns@2.28.0/index.js"></script>
+-->
+
+<script>
+  // Ensure the DOM is fully loaded
+  $(document).ready(function(){
+      console.log("Datepicker script loaded");  // Log to ensure the script runs
+      const dateEls = ['#add-eventDateDatepicker',
+                       '#add-datePurchasedDatepicker'
+      ];
+
+      for (let ind in dateEls) {
+          $(dateEls[ind]).datepicker({
+              format: 'mm/dd/yyyy',  // Date format
+              startDate: '-3d'  // Optional: Datepicker will start 3 days ago
+          });
+        };
+
+      const timeEls = ['#add-eventTimeTimepicker'];
+
+      for (let ind in timeEls) {
+          $(timeEls[ind]).timepicker({
+                showMeridian: false,  // 24-hour format (default is AM/PM)
+                minuteStep: 1
+        });
+      };
+  });
+</script>
 
 <script>
     console.log("Running html script...");
@@ -272,44 +372,52 @@
               maintainAspectRatio: false,
               scales: {
                 x: {
-                  //type: 'time',
-                  //time: {
-                  //  unit: 'day',
-                  //  unitStepSize: 1,
-                  //  displayFormats: {
-                  //    day: 'MMM D'
-                  //  }
-                  //}
+                  /*
+                  type: 'time', // Time scale for x-axis
+                  time: {
+                      unit: 'day',  // You can also use 'month', 'hour', etc.
+                      tooltipFormat: 'll',  // Format when hovering (using moment.js formatting)
+                      displayFormats: {
+                          day: 'MMM D, YYYY',  // Format for display (Month day, Year)
+                      }
+                  },
+                  title: {
+                      display: true,
+                      text: 'Date'
+                  }
+                */
                 },
                 y: {
                   beginAtZero: true
                 }
               }
             }
-            };
+        };
 
-          const supplyConfig = {
-            type: 'line',
-            data: supplyData,
-            options: { 
-              maintainAspectRatio: false,
-              scales: {
-                x: {
-                  //type: 'time',
-                  //time: {
-                  //  unit: 'day',
-                  //  unitStepSize: 1,
-                  //  displayFormats: {
-                  //    day: 'MMM D'
-                  //  }
-                  //}
-                },
-                y: {
-                  beginAtZero: true
+        const supplyConfig = {
+          type: 'line',
+          data: supplyData,
+          options: { 
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                /*
+                type: 'time',
+                time: {
+                  unit: 'day',
+                  unitStepSize: 1,
+                  displayFormats: {
+                    day: 'MMM D'
+                  }
                 }
+              */
+              },
+              y: {
+                beginAtZero: true
               }
             }
-            };
+          }
+          };
 
         const newChart = new Chart(
             document.getElementById(chartID),
@@ -320,7 +428,7 @@
             document.getElementById(supplyChartID),
             supplyConfig
         );
-    }
+    };
 </script>
 
 <script>
@@ -355,6 +463,8 @@
     }
   }
 </script>
+
+
 
 <!--
 <script>

@@ -87,7 +87,6 @@ def _jinja2_format_for_dollar_amount(number):
             return f"-${abs(number):.2f}"
 
 def create_event_last_pricing_supply_mapping(open_event_ids):
-    # TODO: Adjust for retrieval of first two records (this will help keep track of day-to-day upticks / downticks)
     mapping = {}
 
     for match_id in open_event_ids:
