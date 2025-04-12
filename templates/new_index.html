@@ -144,8 +144,44 @@
 
   </div>
 
-
+  <!-- WATCHLIST -->
   <div class="tab-pane" id="watchlist" role="tabpanel" aria-labelledby="watchlist-tab">
+
+    <div class="container" id="current-watchlist-container">
+      <ul id="watchlist-items">
+        <li>Watchlist Items Will Appear Here</li>
+        <li>Theo Von Chicago, IL April 24, 2025</li>
+        <li>Stavros Halkias Chicago Theater</li>
+        <li>Then map these watchlist items to Calendar Object below</li>
+      </ul>
+    </div>
+
+    <div class="container" id="watchlist-calendar-container">
+      <div class="row" id="month-year-row">
+        <div class="col">April, 2025</div>
+      </div>
+      <div class="row" id="day-of-week-row">
+        <div class="col" id="sunday-row">Sunday</div>
+        <div class="col" id="monday-row">Monday</div>
+        <div class="col" id="tuesday-row">Tuesday</div>
+        <div class="col" id="wednesday-row">Wednesday</div>
+        <div class="col" id="thursday-row">Thursday</div>
+        <div class="col" id="friday-row">Friday</div>
+        <div class="col" id="saturday-row">Saturday</div>
+      </div>
+      {% for week_row in calendar_mapping_now.mapping %}
+          <div class="row">
+            <!--TODO: Also consider adding an 'active' or 'today' element-->
+            {% for wday in week_row %}
+                {% if wday is none %}
+                    <div class="col null-weekday"></div>
+                {% else %}
+                    <div class="col reg-weekday">{{ wday }}</div>
+                {% endif %}
+            {% endfor %}
+          </div>
+      {% endfor %}
+    </div>
 
   </div>
 

@@ -2,6 +2,7 @@
 
 import os
 import datetime
+import calendar
 from sqlalchemy import or_, and_
 
 
@@ -65,6 +66,67 @@ class PriceDatapoint(db.Model):
         return {'observation_id': self.observation_id, 'observation_timestamp': self.observation_timestamp, 'event_id': self.event_id, 'section': self.section, 'row': self.row, 'price': self.price, 'source': self.source, 'source_url': self.source_url, 'section_inventory_count': self.section_inventory_count}
     """
 
+class DEPRWeekObj:
+    def __init__(self, week_number, week_array):
+        self.week_number = week_number
+
+        self.sunday = week_array[0]
+        self.monday = week_array[1]
+        self.tuesday = week_array[2]
+        self.wednesday = week_array[3]
+        self.thursday = week_array[4]
+        self.friday = week_array[5]
+        self.saturday = week_array[6]
+
+class CalendarMap:
+    def __init__(self, calendar_month_range):
+        self.month_starts_on = calendar_month_range[0]
+        self.days_in_month = calendar_month_range[1]
+
+        self.mapping = []
+
+        self.create_mapping()
+
+    def create_mapping(self):
+        week = 1
+        current_day_of_week = self.month_starts_on + 1
+        weekday_num_generator = (n for n in range(1, self.days_in_month + 1))
+
+        while week <= 5:
+            current_week = []
+
+            while current_day_of_week < 7:
+                try:
+                    current_week.append(next(weekday_num_generator))
+                    current_day_of_week += 1
+
+                except StopIteration:
+                    if len(current_week) < 7:
+                        diff = 7 - len(current_week)
+
+                        blanks = [None] * diff
+
+                        current_week.extend(blanks)
+                        self.mapping.append(current_week)
+                        return 0
+
+            while len(current_week) < 7:
+                current_week.insert(0, None)
+
+            self.mapping.append(current_week)
+
+            week += 1
+            current_day_of_week = 0
+
+    def __repr__(self):
+        return str(self.mapping)
+
+
+
+
+
+    
+
 @app.template_filter('formatEventName')
 def _jinja2_filter_event_name(name_text):
     # Replace underscores
@@ -111,6 +173,17 @@ def create_event_last_pricing_supply_mapping(open_event_ids):
 
 @app.route('/')
 def index():
+    # Run calendar logic for 'watchlist' tab
+    current_month = datetime.datetime.now().month
+    current_year = datetime.datetime.now().year
+    #first_of_month = datetime.datetime(year=current_year, month=current_month, day=1)
+
+    now_month_range = calendar.monthrange(current_year, current_month)
+
+    calendar_mapping_now = CalendarMap(now_month_range)
+
+    print(calendar_mapping_now)
+
     closed_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_not(None), Inventory.event_date < datetime.datetime.today())).all()
     closed_headers = ["Event Name", "Total Cost", "Total Proceeds", "Event PnL", "Date Sold"]
 
@@ -142,7 +215,8 @@ def index():
                            open_inventory=open_inventory,
                            open_event_ids=open_event_ids,
                            open_event_dps=open_event_dps,
-                           price_supply_mapping=price_supply_mapping)
+                           price_supply_mapping=price_supply_mapping,
+                           calendar_mapping_now=calendar_mapping_now)
 
 
 
