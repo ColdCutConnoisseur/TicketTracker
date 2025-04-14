@@ -30,6 +30,9 @@
     <button class="nav-link" id="open-inventory-tab" data-bs-toggle="tab" data-bs-target="#open-inventory" type="button" role="tab" aria-controls="open-inventory" aria-selected="false">Open Inventory</button>
   </li>
   <li class="nav-item" role="presentation">
+    <button class="nav-link" id="event-calendar-tab" data-bs-toggle="tab" data-bs-target="#event-calendar" type="button" role="tab" aria-controls="event-calendar" aria-selected="false">Event Calendar</button>
+  </li>
+  <li class="nav-item" role="presentation">
     <button class="nav-link" id="watchlist-tab" data-bs-toggle="tab" data-bs-target="#watchlist" type="button" role="tab" aria-controls="watchlist" aria-selected="false">Watchlist</button>
   </li>
   <li class="nav-item" role="presentation">
@@ -157,6 +160,11 @@
       </ul>
     </div>
 
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="tab-pane" id="event-calendar" role="tabpanel" aria-labelledby="event-calendar-tab">
+
     <div class="container" id="watchlist-calendar-container">
       <div class="row" id="month-year-row">
         <div class="col" id="calendar-month-year-display">April, 2025</div>
@@ -171,7 +179,7 @@
         <div class="col dow-col" id="saturday-row">Saturday</div>
       </div>
       {% for week_row in calendar_mapping_now.mapping %}
-          <div class="row">
+          <div class="row date-row">
             <!--TODO: Also consider adding an 'active' or 'today' element-->
             {% for wday in week_row %}
                 {% if wday is none %}
@@ -182,6 +190,17 @@
                         <div class="date-header-strip">
                           <div class="date-circle">{{ wday }}</div>
                         </div>
+                        <div class="event-text">
+                          <ul>
+                          {% set eventsToday = wday | isCurrentMonthEvent( calendar_mapping_now, this_month_inventory ) %}
+                          {% if eventsToday | length > 0 %}
+                              {% for event in eventsToday %}
+                                  <li>{{ event.event_name | formatEventName }}</li>
+                              {% endfor %}
+                          {% endif %}
+                          </ul>
+                        </div>
+                        
                       </div>
                     </div>
                 {% endif %}

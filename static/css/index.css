@@ -76,10 +76,7 @@ tbody tr:nth-child(even) th {
     width: 100vw;
     background-color: purple;
     border-radius: 1%;
-}
-
-#watchlist-calendar-container .row {
-    height: 14%;
+    min-width: 900px;
 }
 
 #calendar-month-year-display {
@@ -94,20 +91,28 @@ tbody tr:nth-child(even) th {
 }
 
 .dow-col {
+    margin: 0px 3px 0px 3px;
     background-color: lightblue;
+}
+
+.date-row {
+    height: 16%;
 }
 
 .null-weekday {
     margin: 5px 0px 5px 0px;
+    width: 14.28%;
 }
 
 .reg-weekday {
     margin: 5px 0px 5px 0px;
+    width: 14.28%;
 }
 
 .date-block {
     background-color: yellow;
     height: 100%;
+    width: 100%;
 }
 
 .date-header-strip {
@@ -125,4 +130,9 @@ tbody tr:nth-child(even) th {
     width: 13%;
     margin-left: auto;
     text-align: center;
+}
+
+.event-text {
+    width: 100%;
+    font-size: 0.5rem;
 }

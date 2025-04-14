@@ -79,7 +79,9 @@ class DEPRWeekObj:
         self.saturday = week_array[6]
 
 class CalendarMap:
-    def __init__(self, calendar_month_range):
+    def __init__(self, month, year, calendar_month_range):
+        self.month = month
+        self.year = year
         self.month_starts_on = calendar_month_range[0]
         self.days_in_month = calendar_month_range[1]
 
@@ -123,11 +125,6 @@ class CalendarMap:
         return str(self.mapping)
 
 
-
-
-
-    
-
 @app.template_filter('formatEventName')
 def _jinja2_filter_event_name(name_text):
     # Replace underscores
@@ -148,6 +145,11 @@ def _jinja2_format_for_dollar_amount(number):
         
         else:
             return f"-${abs(number):.2f}"
+        
+@app.template_filter('isCurrentMonthEvent')
+def _jinja2_find_upcoming_for_current_cal_date(current_day, current_month_mapping, this_month_inventory):
+    today_inventory = [e for e in this_month_inventory if e.event_date.day == current_day]
+    return today_inventory
 
 def create_event_last_pricing_supply_mapping(open_event_ids):
     mapping = {}
@@ -181,7 +183,7 @@ def index():
 
     now_month_range = calendar.monthrange(current_year, current_month)
 
-    calendar_mapping_now = CalendarMap(now_month_range)
+    calendar_mapping_now = CalendarMap(current_month, current_year, now_month_range)
 
     closed_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_not(None), Inventory.event_date < datetime.datetime.today())).all()
     closed_headers = ["Event Name", "Total Cost", "Total Proceeds", "Event PnL", "Date Sold"]
@@ -189,6 +191,8 @@ def index():
     open_inventory = Inventory.query.filter(and_(Inventory.sale_payout_date.is_(None)), ((Inventory.event_date >= datetime.datetime.today().date()))).all()
     # Sort Open Inventory to Alert to upcoming events
     open_inventory.sort(key=lambda x: x.event_date)
+
+    this_month_inventory = [i for i in open_inventory if (i.event_date.year == current_year and i.event_date.month == current_month)]
 
     # Get info for price and supply charts
     open_event_ids = [event.event_id for event in open_inventory]
@@ -215,7 +219,8 @@ def index():
                            open_event_ids=open_event_ids,
                            open_event_dps=open_event_dps,
                            price_supply_mapping=price_supply_mapping,
-                           calendar_mapping_now=calendar_mapping_now)
+                           calendar_mapping_now=calendar_mapping_now,
+                           this_month_inventory=this_month_inventory)
 
 
 
