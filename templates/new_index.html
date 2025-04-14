@@ -19,6 +19,7 @@
 {% endblock %}
 
 {% block content %}
+<div class="main-header">TixTracker</div>
 
 <!-- Nav tabs -->
 <ul class="nav nav-tabs" id="inventory-tabs" role="tablist">
@@ -158,16 +159,16 @@
 
     <div class="container" id="watchlist-calendar-container">
       <div class="row" id="month-year-row">
-        <div class="col">April, 2025</div>
+        <div class="col" id="calendar-month-year-display">April, 2025</div>
       </div>
       <div class="row" id="day-of-week-row">
-        <div class="col" id="sunday-row">Sunday</div>
-        <div class="col" id="monday-row">Monday</div>
-        <div class="col" id="tuesday-row">Tuesday</div>
-        <div class="col" id="wednesday-row">Wednesday</div>
-        <div class="col" id="thursday-row">Thursday</div>
-        <div class="col" id="friday-row">Friday</div>
-        <div class="col" id="saturday-row">Saturday</div>
+        <div class="col dow-col" id="sunday-row">Sunday</div>
+        <div class="col dow-col" id="monday-row">Monday</div>
+        <div class="col dow-col" id="tuesday-row">Tuesday</div>
+        <div class="col dow-col" id="wednesday-row">Wednesday</div>
+        <div class="col dow-col" id="thursday-row">Thursday</div>
+        <div class="col dow-col" id="friday-row">Friday</div>
+        <div class="col dow-col" id="saturday-row">Saturday</div>
       </div>
       {% for week_row in calendar_mapping_now.mapping %}
           <div class="row">
@@ -176,7 +177,13 @@
                 {% if wday is none %}
                     <div class="col null-weekday"></div>
                 {% else %}
-                    <div class="col reg-weekday">{{ wday }}</div>
+                    <div class="col reg-weekday">
+                      <div class="date-block">
+                        <div class="date-header-strip">
+                          <div class="date-circle">{{ wday }}</div>
+                        </div>
+                      </div>
+                    </div>
                 {% endif %}
             {% endfor %}
           </div>

@@ -6,7 +6,13 @@
     --light-grey: #a5a29f;
 }
 
+html {
+    font-size: 16px;
+  }
 
+.main-header {
+    font-size: 3rem;
+}
 
 
 h3 {
@@ -63,4 +69,60 @@ tbody tr:nth-child(even) th {
 
 #open-inventory-table-container tbody tr:nth-child(odd) th {
     background-color: var(--light-grey);
+}
+
+#watchlist-calendar-container {
+    height: 80vh;
+    width: 100vw;
+    background-color: purple;
+    border-radius: 1%;
+}
+
+#watchlist-calendar-container .row {
+    height: 14%;
+}
+
+#calendar-month-year-display {
+    font-size: 2.4rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+#day-of-week-row {
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.dow-col {
+    background-color: lightblue;
+}
+
+.null-weekday {
+    margin: 5px 0px 5px 0px;
+}
+
+.reg-weekday {
+    margin: 5px 0px 5px 0px;
+}
+
+.date-block {
+    background-color: yellow;
+    height: 100%;
+}
+
+.date-header-strip {
+    background-color: blue;
+    height: 20%;
+}
+
+.date-circle {
+    font-size: 0.85rem;
+    width: 20em;
+    height: 100%;
+    color: black;
+    background-color: red;
+    border-radius: 50%;
+    width: 13%;
+    margin-left: auto;
+    text-align: center;
 }

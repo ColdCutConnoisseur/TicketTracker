@@ -1,12 +1,15 @@
 
 
-[ ] Problem that was overlooked during development:  Supply numbers are just the number of individual ticket listings--they don't account
+[x] Problem that was overlooked during development:  Supply numbers are just the number of individual ticket listings--they don't account
     for offered quantity (i.e There may be 25 individual listers but even one of the listers might be offering 30 tickets).
     current logic will return 25 as the supply count
 
+    - Above is partially fixed.  The changes are reflected in supply numbers.  Where this still needs to be changed--> quantity weighted prices like
+       average of lowest three.  There might be three or more offered at lowest price but tracker sees this as qty == 1.
+
 [ ] I would like to color format pricing and supply chart series to reflect a tick up / tick down/ unchanged (green, red, grey)
 
-[ ] Logic for checking whether or not a datapoint exists for today's date comes after the scrape for that datapoint.  It would make way more
+[ ] In price fetcher:  Logic for checking whether or not a datapoint exists for today's date comes after the scrape for that datapoint.  It would make way more
      sense to run this check prior to taking the time to run the scrape.
 
      

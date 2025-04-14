@@ -88,6 +88,7 @@ class CalendarMap:
         self.create_mapping()
 
     def create_mapping(self):
+        """So hard to read -- maybe don't use a million 'while' loops"""
         week = 1
         current_day_of_week = self.month_starts_on + 1
         weekday_num_generator = (n for n in range(1, self.days_in_month + 1))
@@ -181,8 +182,6 @@ def index():
     now_month_range = calendar.monthrange(current_year, current_month)
 
     calendar_mapping_now = CalendarMap(now_month_range)
-
-    print(calendar_mapping_now)
 
     closed_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_not(None), Inventory.event_date < datetime.datetime.today())).all()
     closed_headers = ["Event Name", "Total Cost", "Total Proceeds", "Event PnL", "Date Sold"]
