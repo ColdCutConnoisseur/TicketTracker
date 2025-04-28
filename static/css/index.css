@@ -8,12 +8,28 @@
 
 html {
     font-size: 16px;
-  }
+    font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3 {
+    font-family: 'Poppins', sans-serif;
+}
+body {
+    font-family: 'Open Sans', sans-serif;
+}
 
 .main-header {
     font-size: 3rem;
 }
 
+.inline-logo {
+    height: 2.5em;
+    vertical-align: bottom;
+}
+
+.nav-item {
+    background-color: lightgray;
+}
 
 h3 {
     color: black;

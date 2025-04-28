@@ -185,7 +185,7 @@ def index():
 
     calendar_mapping_now = CalendarMap(current_month, current_year, now_month_range)
 
-    closed_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_not(None), Inventory.event_date < datetime.datetime.today())).all()
+    closed_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_not(None), Inventory.event_date < (datetime.datetime.today()))).all()
     closed_headers = ["Event Name", "Total Cost", "Total Proceeds", "Event PnL", "Date Sold"]
 
     open_inventory = Inventory.query.filter(and_(Inventory.sale_payout_date.is_(None)), ((Inventory.event_date >= datetime.datetime.today().date()))).all()

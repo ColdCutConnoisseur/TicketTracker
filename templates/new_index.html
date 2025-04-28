@@ -19,7 +19,11 @@
 {% endblock %}
 
 {% block content %}
-<div class="main-header">TixTracker</div>
+<div class="main-header">
+  <img src="{{ url_for('static', filename='images/tix_track_logo.png') }}" alt="main-logo" class="inline-logo">
+  TixTracker
+</div>
+
 
 <!-- Nav tabs -->
 <ul class="nav nav-tabs" id="inventory-tabs" role="tablist">

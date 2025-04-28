@@ -3,6 +3,7 @@
 import sys
 import re
 import time
+import datetime
 
 import undetected_chromedriver as uc
 from selenium import webdriver
@@ -12,7 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.orm import Session
 
 from db_interface import create_and_return_db_engine, check_for_existing_datapoint_and_add_if_necessary
@@ -58,7 +59,12 @@ def fetch_event_data():
     """DB fetch to get events that have not occurred yet"""
     db_engine = create_and_return_db_engine()
 
-    stmt = select(Inventory.event_id, Inventory.check_price_url, Inventory.section, Inventory.row).where(Inventory.check_price_url != None)
+    stmt = select(Inventory.event_id, Inventory.check_price_url, Inventory.section, Inventory.row).where(
+             and_(
+                 Inventory.check_price_url != None,
+                 datetime.datetime.now().date() <= Inventory.event_date # Don't check for passed/past events
+                )
+            )
 
     event_data = []
 
@@ -243,7 +249,6 @@ def fetch_prices_and_update_db(driver_type, as_headless, event_data, pricing_met
 
         if section_supply is NoSupplyDataFound or event_pricing is NoPricingDataFound:
             print("No supply or pricing data found. Skipping...")
-            continue
             
         else:
             print("Supply and pricing data found. Updating database...")
