@@ -6,9 +6,12 @@ import calendar
 from sqlalchemy import or_, and_
 
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
+from flask_wtf import FlaskForm
+from wtforms import StringField, DateTimeField, TimeField, DecimalField, IntegerField, TextAreaField, FloatField
+from wtforms.validators import DataRequired, Optional
 
 from config import MY_DB
 
@@ -45,6 +48,31 @@ class Inventory(db.Model):
 
     def __repr__(self):
         return '<Inventory %r>' % self.event_name
+    
+    def to_dict(self):
+        result = {}
+        for c in self.__table__.columns:
+            value = getattr(self, c.name)
+            if isinstance(value, (datetime.date, datetime.time, datetime.datetime)):
+                value = value.isoformat()  # ISO 8601 (safe default)
+            result[c.name] = value
+        return result
+    
+
+class InventoryForm(FlaskForm):
+    event_name = StringField('Event Name', validators=[DataRequired()])
+    venue = StringField('Venue', validators=[DataRequired()])
+    event_date = DateTimeField('Event Date', format='%Y-%m-%d %H:%M', validators=[DataRequired()])
+    event_time = TimeField('Event Time', format='%H:%M', validators=[DataRequired()])
+    date_purchased = DateTimeField('Date Purchased', format='%Y-%m-%d %H:%M', validators=[DataRequired()])
+    qty_purchased = DecimalField('Qty Purchased', validators=[DataRequired()])
+    total_cost = DecimalField('Total Cost', validators=[DataRequired()])
+    cost_per = DecimalField('Cost Per', validators=[DataRequired()])
+    section = StringField('Section', validators=[DataRequired()])
+    row = StringField('Row', validators=[DataRequired()])
+    seat = StringField('Seat', validators=[DataRequired()])
+    notes = TextAreaField('Notes', validators=[Optional()])
+    check_price_url = TextAreaField('Check Price URL', validators=[Optional()])
 
 class PriceDatapoint(db.Model):
     __tablename__ = 'prices'
@@ -134,6 +162,11 @@ def _jinja2_filter_event_name(name_text):
     capped = " ".join(capped)
     return capped
 
+@app.template_filter('noNull')
+def _jinja2_filter_nones(val):
+    r = 0 if val is None else val
+    return r
+
 @app.template_filter('dollarFormat')
 def _jinja2_format_for_dollar_amount(number):
     if not number:
@@ -186,6 +219,7 @@ def index():
     calendar_mapping_now = CalendarMap(current_month, current_year, now_month_range)
 
     closed_inventory = Inventory.query.filter(or_(Inventory.sale_payout_date.is_not(None), Inventory.event_date < (datetime.datetime.today()))).all()
+    closed_inventory.sort(key=lambda x: x.event_date)
     closed_headers = ["Event Name", "Total Cost", "Total Proceeds", "Event PnL", "Date Sold"]
 
     open_inventory = Inventory.query.filter(and_(Inventory.sale_payout_date.is_(None)), ((Inventory.event_date >= datetime.datetime.today().date()))).all()
@@ -221,6 +255,47 @@ def index():
                            price_supply_mapping=price_supply_mapping,
                            calendar_mapping_now=calendar_mapping_now,
                            this_month_inventory=this_month_inventory)
+
+@app.route('/search_inventory')
+def search_inventory():
+    q = request.args.get('q', '').strip()
+
+    if not q:
+        print("No query string!")
+        return jsonify({})
+    
+    if q:
+        suggested = Inventory.query.filter(Inventory.event_name.like(f"%{q}%")).limit(10).all()
+        return jsonify([item.to_dict() for item in suggested])
+    
+@app.route('/inventory/add', methods=['GET', 'POST'])
+def add_inventory():
+    form = InventoryForm()
+    if form.validate_on_submit():
+        inv = Inventory(
+            event_name=form.event_name.data,
+            venue=form.venue.data,
+            event_date=form.event_date.data,
+            event_time=form.event_time.data,
+            date_purchased=form.date_purchased.data,
+            qty_purchased=form.qty_purchased.data,
+            total_cost=form.total_cost.data,
+            cost_per=form.cost_per.data,
+            section=form.section.data,
+            row=form.row.data,
+            seat=form.seat.data,
+            notes=form.notes.data,
+            check_price_url=form.check_price_url.data
+        )
+        db.session.add(inv)
+        db.session.commit()
+        flash('Inventory item added successfully!', 'success')
+        return redirect(url_for('add_inventory'))
+    return render_template('add_inventory.html', form=form)
+    
+
+
+
 
 
 

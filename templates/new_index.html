@@ -61,11 +61,11 @@
     
         <tbody>
           {% for c_inv in closed_inventory %}
-          {% set profit = c_inv.sale_total_proceeds - c_inv.total_cost %}
+          {% set profit = (c_inv.sale_total_proceeds | noNull) - c_inv.total_cost %}
             <tr>
               <th role="row">{{ c_inv.event_name | formatEventName }}</th>
               <td>{{ '${0:0.2f}'.format(c_inv.total_cost) }}</td>
-              <td>{{ '${0:0.2f}'.format(c_inv.sale_total_proceeds) }}</td>
+              <td>{{ '${0:0.2f}'.format(c_inv.sale_total_proceeds | noNull) }}</td>
               {% if profit > 0 %}
                 <td style="color: green;">{{ '${0:0.2f}'.format(profit) }}</td>
               {% else %}
@@ -217,54 +217,121 @@
 
 
   <div class="tab-pane" id="editor" role="tabpanel" aria-labelledby="editor-tab">
+    
     <h3>Create Inventory Item</h3>
 
+      <form method="POST">
+        {{ form.hidden_tag() }}
+    
+        {{ form.event_name.label }} {{ form.event_name() }}<br>
+        {{ form.venue.label }} {{ form.venue() }}<br>
+        {{ form.event_date.label }} {{ form.event_date() }}<br>
+        {{ form.event_time.label }} {{ form.event_time() }}<br>
+        {{ form.date_purchased.label }} {{ form.date_purchased() }}<br>
+        {{ form.qty_purchased.label }} {{ form.qty_purchased() }}<br>
+        {{ form.total_cost.label }} {{ form.total_cost() }}<br>
+        {{ form.cost_per.label }} {{ form.cost_per() }}<br>
+        {{ form.section.label }} {{ form.section() }}<br>
+        {{ form.row.label }} {{ form.row() }}<br>
+        {{ form.seat.label }} {{ form.seat() }}<br>
+        {{ form.sale_payout_date.label }} {{ form.sale_payout_date() }}<br>
+        {{ form.self_use_qty.label }} {{ form.self_use_qty() }}<br>
+        {{ form.sale_total_proceeds.label }} {{ form.sale_total_proceeds() }}<br>
+        {{ form.sale_marketplace.label }} {{ form.sale_marketplace() }}<br>
+        {{ form.notes.label }} {{ form.notes() }}<br>
+        {{ form.manual_price_track.label }} {{ form.manual_price_track() }}<br>
+        {{ form.check_price_url.label }} {{ form.check_price_url() }}<br>
+    
+        <button type="submit">Add Inventory</button>
+      </form>
+
+      <!-- OLD 'ADD' FORM
       <form id="add-inventory-form">
         
-        <!--Event Name-->
+      
         <div class="form-group">
           <label for="add-eventNameInput">Event Name</label>
           <input type="text" class="form-control" id="add-eventNameInput">
         </div>
 
-        <!--Venue Name-->
+        
         <div class="form-group">
           <label for="add-venueNameInput">Venue Name</label>
           <input type="text" class="form-control" id="add-venueNameInput">
         </div>
 
-        <!--Event Date -->
+        
         <div class="form-group">
             <label for="add-eventDateDatepicker">Event Date:</label>
             <input type="text" class="form-control" id="add-eventDateDatepicker" placeholder="Pick a date">
         </div>
 
-        <!--Event Time-->
+        
         <div class="form-group">
           <label for="add-eventTimeTimepicker">Event Time:</label>
           <input type="text" class="form-control" id="add-eventTimeTimepicker" placeholder="Pick a time">
         </div>
 
-        <!--Date Purchased-->
+        
         <div class="form-group">
           <label for="add-datePurchasedDatepicker">Purchased Date:</label>
           <input type="text" class="form-control" id="add-datePurchasedDatepicker" placeholder="Pick a date">
         </div>
   
-        <!--Notes-->
+        
         <div class="form-group">
           <label for="add-eventNotes">Notes</label>
           <textarea class="form-control" id="add-eventNotes" rows="4"></textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary">Add Inventory</button>
+        <button type="submit" class="btn btn-primary">Add Inventory Item</button>
       </form>
+      -->
 
-    <h3>Update Inventory Item</h3>
+    <h3>Retrieve & Update Inventory Item</h3>
+
+      <form id="update-event-form">
+        <div class="form-group">
+          <label for="inventory-search">Search Inventory By Event Name: </label>
+          <input type="text" class="form-control" id="inventory-search" placeholder="Search Inventory Items">
+          <div id="suggestions"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="update-item-self-use-qty">Self Use Quantity</label>
+          <input type="text" class="form-control" id="update-item-self-use-qty">
+        </div>
+
+        <div class="form-group">
+          <label for="update-item-sale-total-proceeds">Total Proceeds</label>
+          <input type="text" class="form-control" id="update-item-sale-total-proceeds">
+        </div>
+
+        <div class="form-group">
+          <label for="update-item-sale-marketplace">Sale Marketplace</label>
+          <input type="text" class="form-control" id="update-item-sale-marketplace">
+        </div>
+
+        <div class="form-group">
+          <label for="update-item-eventNotes">Notes</label>
+          <textarea class="form-control" id="update-item-eventNotes" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="update-tiem-check-price-url">Check-Price-URL</label>
+          <input type="text" class="form-control" id="update-tiem-check-price-url">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Inventory Item</button>
+        
+      </form>
 
     <h3>Delete Inventory Item</h3>
 
+      <p>Coming soon....maybe</p>
+
     <h3>Bulk Insert From File</h3>
+      <p>Also coming soon....maybe</p>
       <form>
         <div class="form-group">
           <label for="bulkAddFileDialog">Bulk Insert File</label>
@@ -528,6 +595,58 @@
         buttonElement.innerText = "Show Supply Chart";
     }
   }
+</script>
+
+
+<script>
+  // Functionality for inventory search
+  const endpoint = "{{ url_for('search_inventory') }}";
+
+
+  document.getElementById('inventory-search').addEventListener('input', async function() {
+      const query = this.value.trim();
+      const suggestions = document.getElementById('suggestions');
+
+      if (query.length < 2) {
+        suggestions.style.display = 'none';
+        suggestions.innerHTML = '';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${endpoint}?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+
+        suggestions.innerHTML = '';
+
+        if (data.length === 0) {
+          suggestions.style.display = 'none';
+          return;
+        }
+
+        data.forEach(item => {
+          const newDiv = document.createElement('div');
+          newDiv.className = 'inventory-search-dropdown-item';
+          newDiv.textContent = item.event_name;
+          newDiv.onclick = () => {
+            document.getElementById('inventory-search').value = item.event_name;
+            suggestions.style.display = 'none';
+
+            document.getElementById('update-item-self-use-qty').value = item.self_use_qty
+            document.getElementById('update-item-sale-total-proceeds').value = item.sale_total_proceeds
+            document.getElementById('update-item-sale-marketplace').value = item.sale_marketplace
+            document.getElementById('update-item-eventNotes').value = item.notes
+            document.getElementById('update-tiem-check-price-url').value = item.check_price_url
+          };
+          suggestions.appendChild(newDiv);
+        });
+
+        suggestions.style.display = 'block';
+      } catch (err) {
+        console.error("Search error:", err);
+        suggestions.style.display = 'none';
+      }
+  });
 </script>
 
 

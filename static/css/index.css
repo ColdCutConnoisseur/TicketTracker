@@ -4,6 +4,16 @@
     --light-green-color: #9fceb6;
     --dark-orange:  #fc9105;
     --light-grey: #a5a29f;
+
+    /* CALENDAR COLORS */
+    --calendar-rich-black: #04151fff;
+    --calendar-dark-slate-gray: #183a37ff;
+    --calendar-wheat: #efd6acff;
+    --calendar-mahogany: #c44900ff;
+    --calendar-dark-purple: #432534ff;
+    --calendar-puke-green: #8e8d11ff;
+    --calendar-dark-base: #262737ff;
+    --calendar-light-accent: #e4e3b6ff;
 }
 
 html {
@@ -90,7 +100,7 @@ tbody tr:nth-child(even) th {
 #watchlist-calendar-container {
     height: 80vh;
     width: 100vw;
-    background-color: purple;
+    background-color: var(--calendar-dark-purple);
     border-radius: 1%;
     min-width: 900px;
 }
@@ -99,6 +109,12 @@ tbody tr:nth-child(even) th {
     font-size: 2.4rem;
     font-weight: bold;
     text-align: center;
+    color: var(--calendar-dark-base);
+    text-shadow:
+        -1px -1px 0 var(--calendar-light-accent),
+        1px -1px 0 var(--calendar-light-accent),
+        -1px  1px 0 var(--calendar-light-accent),
+        1px  1px 0 var(--calendar-light-accent);
 }
 
 #day-of-week-row {
@@ -108,7 +124,7 @@ tbody tr:nth-child(even) th {
 
 .dow-col {
     margin: 0px 3px 0px 3px;
-    background-color: lightblue;
+    background-color: var(--calendar-puke-green);
 }
 
 .date-row {
@@ -126,13 +142,13 @@ tbody tr:nth-child(even) th {
 }
 
 .date-block {
-    background-color: yellow;
+    background-color: var(--calendar-wheat);
     height: 100%;
     width: 100%;
 }
 
 .date-header-strip {
-    background-color: blue;
+    background-color: var(--calendar-dark-slate-gray);
     height: 20%;
 }
 
@@ -141,7 +157,7 @@ tbody tr:nth-child(even) th {
     width: 20em;
     height: 100%;
     color: black;
-    background-color: red;
+    background-color: var(--calendar-mahogany);
     border-radius: 50%;
     width: 13%;
     margin-left: auto;
@@ -151,4 +167,40 @@ tbody tr:nth-child(even) th {
 .event-text {
     width: 100%;
     font-size: 0.5rem;
+}
+
+
+
+
+#editor h3 {
+    padding: 10px 0px 10px 10px;
+}
+
+
+#suggestions {
+    background-color: yellow;
+}
+
+.inventory-search-dropdown-item {
+    cursor: pointer;         /* 🔁 Shows a hand icon on hover */
+    padding: 6px 12px;       /* 🧼 Better spacing */
+    transition: background 0.2s;
+}
+      
+.inventory-search-dropdown-item:hover {
+        background-color: #f0f0f0;  /* 🔦 Highlights on hover */
+}
+
+#add-inventory-form {
+    background-color: lightgreen;
+    margin-left: 10vw;
+    padding: 5rem;
+    max-width: 33vw;
+}
+
+#update-event-form {
+    background-color: lightblue;
+    margin-left: 10vw;
+    padding: 5rem;
+    max-width: 33vw;
 }
