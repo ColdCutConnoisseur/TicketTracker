@@ -220,29 +220,81 @@
     
     <h3>Create Inventory Item</h3>
 
-      <form method="POST">
-        {{ form.hidden_tag() }}
-    
-        {{ form.event_name.label }} {{ form.event_name() }}<br>
-        {{ form.venue.label }} {{ form.venue() }}<br>
-        {{ form.event_date.label }} {{ form.event_date() }}<br>
-        {{ form.event_time.label }} {{ form.event_time() }}<br>
-        {{ form.date_purchased.label }} {{ form.date_purchased() }}<br>
-        {{ form.qty_purchased.label }} {{ form.qty_purchased() }}<br>
-        {{ form.total_cost.label }} {{ form.total_cost() }}<br>
-        {{ form.cost_per.label }} {{ form.cost_per() }}<br>
-        {{ form.section.label }} {{ form.section() }}<br>
-        {{ form.row.label }} {{ form.row() }}<br>
-        {{ form.seat.label }} {{ form.seat() }}<br>
-        {{ form.sale_payout_date.label }} {{ form.sale_payout_date() }}<br>
-        {{ form.self_use_qty.label }} {{ form.self_use_qty() }}<br>
-        {{ form.sale_total_proceeds.label }} {{ form.sale_total_proceeds() }}<br>
-        {{ form.sale_marketplace.label }} {{ form.sale_marketplace() }}<br>
-        {{ form.notes.label }} {{ form.notes() }}<br>
-        {{ form.manual_price_track.label }} {{ form.manual_price_track() }}<br>
-        {{ form.check_price_url.label }} {{ form.check_price_url() }}<br>
-    
-        <button type="submit">Add Inventory</button>
+      <form id="add-inventory-form" method="POST">
+        {{ add_form.hidden_tag() }}
+
+        <!-- Basic Event Info -->
+        <div class="form-group">
+          {{ add_form.event_name.label(class="form-label") }}
+          {{ add_form.event_name(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.venue.label(class="form-label") }}
+          {{ add_form.venue(class="form-control") }}
+        </div>
+
+        <!-- Event Schedule -->
+        <div class="form-group">
+          {{ add_form.event_date.label(class="form-label") }}
+          {{ add_form.event_date(class="form-control", id="event_date_picker") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.event_time.label(class="form-label") }}
+          {{ add_form.event_time(class="form-control", id="event_time_picker") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.date_purchased.label(class="form-label") }}
+          {{ add_form.date_purchased(class="form-control", id="date_purchased_picker") }}
+        </div>
+
+        <!-- Purchase Details -->
+        <div class="form-group">
+          {{ add_form.qty_purchased.label(class="form-label") }}
+          {{ add_form.qty_purchased(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.total_cost.label(class="form-label") }}
+          {{ add_form.total_cost(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.cost_per.label(class="form-label") }}
+          {{ add_form.cost_per(class="form-control") }}
+        </div>
+
+        <!-- Seating -->
+        <div class="form-group">
+          {{ add_form.section.label(class="form-label") }}
+          {{ add_form.section(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.row.label(class="form-label") }}
+          {{ add_form.row(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.seat.label(class="form-label") }}
+          {{ add_form.seat(class="form-control") }}
+        </div>
+
+        <!-- Optional Fields -->
+        <div class="form-group">
+          {{ add_form.notes.label(class="form-label") }}
+          {{ add_form.notes(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.check_price_url.label(class="form-label") }}
+          {{ add_form.check_price_url(class="form-control") }}
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary mt-3">Add Inventory Item</button>
       </form>
 
       <!-- OLD 'ADD' FORM

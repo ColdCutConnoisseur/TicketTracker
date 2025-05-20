@@ -20,6 +20,7 @@ from config import MY_DB
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = MY_DB
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = "thisisthekeytoeverythingihopeyoudontseeit"
 
 db = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
@@ -245,6 +246,8 @@ def index():
 
     open_headers = ["Event Name", "Venue", "Event Date", "Qty Purchased", "Total Cost", "Cost Per", "Section", "Row", "Seat", "Notes", "Last Px", "Supply", "Price Chart", "Supply Chart"]
     
+    add_form = InventoryForm()
+
     return render_template('new_index.html',
                            closed_headers=closed_headers,
                            closed_inventory=closed_inventory,
@@ -254,7 +257,8 @@ def index():
                            open_event_dps=open_event_dps,
                            price_supply_mapping=price_supply_mapping,
                            calendar_mapping_now=calendar_mapping_now,
-                           this_month_inventory=this_month_inventory)
+                           this_month_inventory=this_month_inventory,
+                           add_form=add_form)
 
 @app.route('/search_inventory')
 def search_inventory():
