@@ -10,7 +10,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, f
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
-from wtforms import StringField, DateTimeField, TimeField, DecimalField, IntegerField, TextAreaField, FloatField
+from wtforms import StringField, DateTimeField, TimeField, DateField, DecimalField, IntegerField, TextAreaField, FloatField
 from wtforms.validators import DataRequired, Optional
 
 from config import MY_DB
@@ -63,17 +63,17 @@ class Inventory(db.Model):
 class InventoryForm(FlaskForm):
     event_name = StringField('Event Name', validators=[DataRequired()])
     venue = StringField('Venue', validators=[DataRequired()])
-    event_date = DateTimeField('Event Date', format='%Y-%m-%d %H:%M', validators=[DataRequired()])
+    event_date = DateField('Event Date', format="%Y-%m-%d", validators=[DataRequired()]) # DateTimeField   --> '%Y-%m-%d %H:%M'
     event_time = TimeField('Event Time', format='%H:%M', validators=[DataRequired()])
-    date_purchased = DateTimeField('Date Purchased', format='%Y-%m-%d %H:%M', validators=[DataRequired()])
+    date_purchased = DateField('Date Purchased', format="%Y-%m-%d", validators=[DataRequired()]) # DateTimeField   --> '%Y-%m-%d %H:%M'
     qty_purchased = DecimalField('Qty Purchased', validators=[DataRequired()])
     total_cost = DecimalField('Total Cost', validators=[DataRequired()])
     cost_per = DecimalField('Cost Per', validators=[DataRequired()])
     section = StringField('Section', validators=[DataRequired()])
     row = StringField('Row', validators=[DataRequired()])
     seat = StringField('Seat', validators=[DataRequired()])
-    notes = TextAreaField('Notes', validators=[Optional()])
-    check_price_url = TextAreaField('Check Price URL', validators=[Optional()])
+    notes = TextAreaField('Notes', filters=[lambda x: x or None], validators=[Optional()])
+    check_price_url = TextAreaField('Check Price URL', filters=[lambda x: x or None], validators=[Optional()])
 
 class PriceDatapoint(db.Model):
     __tablename__ = 'prices'
@@ -208,7 +208,7 @@ def create_event_last_pricing_supply_mapping(open_event_ids):
     return mapping
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     # Run calendar logic for 'watchlist' tab
     current_month = datetime.datetime.now().month
@@ -248,6 +248,31 @@ def index():
     
     add_form = InventoryForm()
 
+    # DEBUG
+    if request.method == "POST":
+        print("Raw POST data:", request.form)
+
+    if add_form.validate_on_submit():
+        inv = Inventory(
+            event_name=add_form.event_name.data,
+            venue=add_form.venue.data,
+            event_date=add_form.event_date.data,
+            event_time=add_form.event_time.data,
+            date_purchased=add_form.date_purchased.data,
+            qty_purchased=add_form.qty_purchased.data,
+            total_cost=add_form.total_cost.data,
+            cost_per=add_form.cost_per.data,
+            section=add_form.section.data,
+            row=add_form.row.data,
+            seat=add_form.seat.data,
+            notes=add_form.notes.data,
+            check_price_url=add_form.check_price_url.data
+        )
+        db.session.add(inv)
+        db.session.commit()
+        flash('Inventory item added successfully!', 'success')
+        return redirect(url_for('successful_add'))
+
     return render_template('new_index.html',
                            closed_headers=closed_headers,
                            closed_inventory=closed_inventory,
@@ -259,6 +284,10 @@ def index():
                            calendar_mapping_now=calendar_mapping_now,
                            this_month_inventory=this_month_inventory,
                            add_form=add_form)
+
+@app.route('/success_message')
+def successful_add():
+    return "<h3>Inventory Added Successfully!</h3>"
 
 @app.route('/search_inventory')
 def search_inventory():
@@ -294,8 +323,7 @@ def add_inventory():
         db.session.add(inv)
         db.session.commit()
         flash('Inventory item added successfully!', 'success')
-        return redirect(url_for('add_inventory'))
-    return render_template('add_inventory.html', form=form)
+    return redirect(url_for('index'))
     
 
 
