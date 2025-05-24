@@ -193,11 +193,18 @@ def create_event_last_pricing_supply_mapping(open_event_ids):
                                  PriceDatapoint.observation_timestamp.desc()).limit(2).all()
 
         if pds:
-            pd_today, pd_yesterday = pds
-            price_uptick = pd_today.price > pd_yesterday.price
-            supply_uptick = pd_today.section_inventory_count > pd_yesterday.section_inventory_count
 
-            price_supply_data = [pd_today.price, pd_today.section_inventory_count, price_uptick, supply_uptick]
+            # Observation of length 1 will be newly listed or tracked events
+            if len(pds) == 1:
+                observation = pds[0]
+                price_supply_data = [observation.price, observation.section_inventory_count, True, True]
+
+            elif len(pds) == 2:
+                pd_today, pd_yesterday = pds
+                price_uptick = pd_today.price > pd_yesterday.price
+                supply_uptick = pd_today.section_inventory_count > pd_yesterday.section_inventory_count
+
+                price_supply_data = [pd_today.price, pd_today.section_inventory_count, price_uptick, supply_uptick]
 
         else:
             price_supply_data = [None, None, None, None]
