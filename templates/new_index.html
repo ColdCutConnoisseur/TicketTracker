@@ -364,6 +364,11 @@
         </div>
 
         <div class="form-group">
+          <label for="update-item-self-use-qty">Event ID</label>
+          <input type="text" class="form-control" id="readonly-item-event_id" readonly>
+        </div>
+
+        <div class="form-group">
           <label for="update-item-self-use-qty">Self Use Quantity</label>
           <input type="text" class="form-control" id="update-item-self-use-qty">
         </div>
@@ -384,8 +389,8 @@
         </div>
 
         <div class="form-group">
-          <label for="update-tiem-check-price-url">Check-Price-URL</label>
-          <input type="text" class="form-control" id="update-tiem-check-price-url">
+          <label for="update-item-check-price-url">Check-Price-URL</label>
+          <input type="text" class="form-control" id="update-item-check-price-url">
         </div>
 
         <button type="submit" class="btn btn-primary">Update Inventory Item</button>
@@ -666,7 +671,7 @@
 
 <script>
   // Functionality for inventory search
-  const endpoint = "{{ url_for('search_inventory') }}";
+  const search_endpoint = "{{ url_for('search_inventory') }}";
 
 
   document.getElementById('inventory-search').addEventListener('input', async function() {
@@ -680,7 +685,7 @@
       }
 
       try {
-        const response = await fetch(`${endpoint}?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`${search_endpoint}?q=${encodeURIComponent(query)}`);
         const data = await response.json();
 
         suggestions.innerHTML = '';
@@ -698,11 +703,12 @@
             document.getElementById('inventory-search').value = item.event_name;
             suggestions.style.display = 'none';
 
-            document.getElementById('update-item-self-use-qty').value = item.self_use_qty
-            document.getElementById('update-item-sale-total-proceeds').value = item.sale_total_proceeds
-            document.getElementById('update-item-sale-marketplace').value = item.sale_marketplace
-            document.getElementById('update-item-eventNotes').value = item.notes
-            document.getElementById('update-tiem-check-price-url').value = item.check_price_url
+            document.getElementById('readonly-item-event_id').value = item.event_id;
+            document.getElementById('update-item-self-use-qty').value = item.self_use_qty;
+            document.getElementById('update-item-sale-total-proceeds').value = item.sale_total_proceeds;
+            document.getElementById('update-item-sale-marketplace').value = item.sale_marketplace;
+            document.getElementById('update-item-eventNotes').value = item.notes;
+            document.getElementById('update-item-check-price-url').value = item.check_price_url;
           };
           suggestions.appendChild(newDiv);
         });

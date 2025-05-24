@@ -268,7 +268,7 @@ def run_fetch_process(driver_type=DriverSelection.FIREFOX, as_headless=False, pr
 if __name__ == "__main__":
     # Config
     DRIVER_TYPE = DriverSelection.FIREFOX
-    AS_HEADLESS = False
+    AS_HEADLESS = True
     PRICING_METHOD = PricingMethod.FTA
 
     # Run
