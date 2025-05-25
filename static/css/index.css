@@ -157,11 +157,19 @@ tbody tr:nth-child(even) th {
     width: 20em;
     height: 100%;
     color: black;
-    background-color: var(--calendar-mahogany);
     border-radius: 50%;
     width: 13%;
     margin-left: auto;
     text-align: center;
+}
+
+.date-circle-normal {
+    background-color: var(--calendar-mahogany);
+}
+
+.date-circle-highlighted {
+    background-color: white; /* #ed0982; */
+    font-weight: bolder;
 }
 
 .event-text {

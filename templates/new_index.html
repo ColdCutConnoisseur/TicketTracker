@@ -189,14 +189,18 @@
                 {% if wday is none %}
                     <div class="col null-weekday"></div>
                 {% else %}
+                    {% set eventsToday = wday | isCurrentMonthEvent( calendar_mapping_now, this_month_inventory ) %}
                     <div class="col reg-weekday">
                       <div class="date-block">
                         <div class="date-header-strip">
-                          <div class="date-circle">{{ wday }}</div>
+                          {% if eventsToday | length > 0 %}
+                              <div class="date-circle date-circle-highlighted">{{ wday }}</div>
+                          {% else %}
+                              <div class="date-circle date-circle-normal">{{ wday }}</div>
+                          {% endif %}
                         </div>
                         <div class="event-text">
                           <ul>
-                          {% set eventsToday = wday | isCurrentMonthEvent( calendar_mapping_now, this_month_inventory ) %}
                           {% if eventsToday | length > 0 %}
                               {% for event in eventsToday %}
                                   <li>{{ event.event_name | formatEventName }}</li>
