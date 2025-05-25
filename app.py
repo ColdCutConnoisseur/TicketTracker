@@ -242,7 +242,7 @@ def index():
     calendar_mapping_now = create_and_return_calendar_map(current_year, current_month)
 
     # Closed Inventory
-    closed_headers = ["Event Name", "Total Cost", "Total Proceeds", "Event PnL", "Date Sold"]
+    closed_headers = ["Event Name", "Total Cost", "Total Proceeds", "Event PnL", "Event Return", "Date Sold"]
     closed_inventory = fetch_closed_inventory()
 
     # Open Inventory
