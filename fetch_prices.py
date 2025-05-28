@@ -236,27 +236,30 @@ def fetch_event_pricing_data(driver, event_data_chunk, wait, pricing_method):
 def fetch_prices_and_update_db(driver_type, as_headless, event_data, pricing_method):
     for data_chunk in event_data:
         driver = create_and_return_driver(which_driver=driver_type, run_headless=as_headless)
-        wait = WebDriverWait(driver, 90)
-        event_id = data_chunk[0]
-        url = data_chunk[1]
-        event_section = data_chunk[2]
-        event_row = data_chunk[3]
+        
+        try:
+            wait = WebDriverWait(driver, 90)
+            event_id = data_chunk[0]
+            url = data_chunk[1]
+            event_section = data_chunk[2]
+            event_row = data_chunk[3]
 
-        # TODO: To save time, run the insert checks here
-        # A.k.a if a datapoint already exists for today, skip that event scrape
+            # TODO: To save time, run the insert checks here
+            # A.k.a if a datapoint already exists for today, skip that event scrape
 
-        section_supply, event_pricing = fetch_event_pricing_data(driver, data_chunk, wait, pricing_method)
+            section_supply, event_pricing = fetch_event_pricing_data(driver, data_chunk, wait, pricing_method)
 
-        if section_supply is NoSupplyDataFound or event_pricing is NoPricingDataFound:
-            print("No supply or pricing data found. Skipping...")
+            if section_supply is NoSupplyDataFound or event_pricing is NoPricingDataFound:
+                print("No supply or pricing data found. Skipping...")
             
-        else:
-            print("Supply and pricing data found. Updating database...")
-            # Insert data into 'Price' table
-            # TODO: Take check logic from this function for above TODO
-            check_for_existing_datapoint_and_add_if_necessary(event_id, event_section, event_row, event_pricing, url, section_supply)
-
-        driver.quit()
+            else:
+                print("Supply and pricing data found. Updating database...")
+                # Insert data into 'Price' table
+                # TODO: Take check logic from this function for above TODO
+                check_for_existing_datapoint_and_add_if_necessary(event_id, event_section, event_row, event_pricing, url, section_supply)
+        
+        finally:
+            driver.quit()
 
 def run_fetch_process(driver_type=DriverSelection.FIREFOX, as_headless=False, pricing_method=PricingMethod.AVG):
     """Main function to run the fetch process--get data then insert it"""
