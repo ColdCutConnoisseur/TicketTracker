@@ -169,10 +169,10 @@
 
     <div class="container" id="current-watchlist-container">
       <ul id="watchlist-items">
-        <li>Watchlist Items Will Appear Here</li>
+        <li><strong>Watchlist Items Will Appear Here</strong></li>
         <li>Theo Von Chicago, IL April 24, 2025</li>
         <li>Stavros Halkias Chicago Theater</li>
-        <li>Then map these watchlist items to Calendar Object below</li>
+        <li>Then map these watchlist items to Calendar Object (other tab)</li>
       </ul>
     </div>
 
@@ -183,7 +183,7 @@
 
     <div class="container" id="watchlist-calendar-container">
       <div class="row" id="month-year-row">
-        <div class="col" id="calendar-month-year-display">April, 2025</div>
+        <div class="col" id="calendar-month-year-display">{{ calendar_mapping_now.month_name }}, {{ calendar_mapping_now.year }}</div>
       </div>
       <div class="row" id="day-of-week-row">
         <div class="col dow-col" id="sunday-row">Sunday</div>

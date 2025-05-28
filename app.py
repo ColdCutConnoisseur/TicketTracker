@@ -113,9 +113,28 @@ class CalendarMap:
         self.month_starts_on = calendar_month_range[0]
         self.days_in_month = calendar_month_range[1]
 
+        self.month_name = None
+
         self.mapping = []
 
         self.create_mapping()
+        self._set_month_name()
+
+    def _set_month_name(self):
+        month_names = {1 : "January",
+                            2 : "February",
+                            3 : "March",
+                            4 : "April",
+                            5 : "May",
+                            6 : "June",
+                            7 : "July",
+                            8 : "August",
+                            9 : "September",
+                            10: "October",
+                            11: "November",
+                            12: "December"}
+        
+        self.month_name = month_names[self.month]
 
     def create_mapping(self):
         """So hard to read -- maybe don't use a million 'while' loops"""
