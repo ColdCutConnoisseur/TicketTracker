@@ -212,3 +212,14 @@ tbody tr:nth-child(even) th {
     padding: 5rem;
     max-width: 33vw;
 }
+
+.summary-stats-holder {
+    max-width: 45vw;
+    margin: 10px;
+    padding: 20px;
+    background-color: lightblue;
+}
+
+#mtm-number {
+    font-weight: bold;
+}

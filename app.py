@@ -230,8 +230,18 @@ def fetch_open_inventory():
     open_inventory.sort(key=lambda x: x.event_date)
     return open_inventory
 
+def calculate_mark_to_market(price_supply_mapping, open_inventory):
+    """Instead of doing this in jinja, just do this here"""
+    mtm_count = 0
 
+    for inventory_item in open_inventory:
+        item_qty = inventory_item.qty_purchased
+        pulled_price = price_supply_mapping[inventory_item.event_id][0]
+        item_current_price = pulled_price if pulled_price else inventory_item.cost_per
+        product = item_qty * item_current_price
+        mtm_count += product
 
+    return mtm_count
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -263,6 +273,9 @@ def index():
 
     # Get Last Price & Supply Observations
     price_supply_mapping = create_event_last_pricing_supply_mapping(open_event_ids)
+
+    # MTM Calculation
+    mtm_count = calculate_mark_to_market(price_supply_mapping, open_inventory)
 
     open_headers = ["Event Name", "Venue", "Event Date", "Qty Purchased", "Total Cost", "Cost Per", "Section", "Row", "Seat", "Notes", "Last Px", "Supply", "Price Chart", "Supply Chart"]
     
@@ -303,6 +316,7 @@ def index():
                            price_supply_mapping=price_supply_mapping,
                            calendar_mapping_now=calendar_mapping_now,
                            this_month_inventory=this_month_inventory,
+                           mtm_count=mtm_count,
                            add_form=add_form)
 
 @app.route('/success_message')

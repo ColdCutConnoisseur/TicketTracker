@@ -91,11 +91,13 @@
 
   <div class="tab-pane" id="open-inventory" role="tabpanel" aria-labelledby="open-inventory-tab">
 
-    <div class="container-fluid summary-stats-holder">
-      <h2>Summary Stats</h2>
-
-      <div id="exposure-label">Exposure:</div> <span>{{ closed_inventory | map(attribute='total_cost') | sum }}</span>
-      <div id="mtm-label">Mark-to-Market:</div> <span>{{ closed_inventory | map(attribute='total_cost') | sum }}</span>
+    <div class="stats-packager">
+      <div class="d-flex flex-column align-items-start summary-stats-holder">
+        <h2>Summary Stats</h2>
+        {% set exposure = open_inventory | map(attribute='total_cost') | sum %}
+        <div id="exposure-label">Exposure: <span>{{ '${0:0.2f}'.format(exposure) }}</span></div>
+        <div id="mtm-label">Mark-to-Market: <span id="mtm-number">{{ '${0:0.2f}'.format(mtm_count) }}</span></div>
+      </div>
     </div>
 
     <div class="container-fluid" id="open-inventory-table-container">
