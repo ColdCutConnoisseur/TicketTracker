@@ -327,48 +327,6 @@
         <button type="submit" class="btn btn-primary mt-3">Add Inventory Item</button>
       </form>
 
-      <!-- OLD 'ADD' FORM
-      <form id="add-inventory-form">
-        
-      
-        <div class="form-group">
-          <label for="add-eventNameInput">Event Name</label>
-          <input type="text" class="form-control" id="add-eventNameInput">
-        </div>
-
-        
-        <div class="form-group">
-          <label for="add-venueNameInput">Venue Name</label>
-          <input type="text" class="form-control" id="add-venueNameInput">
-        </div>
-
-        
-        <div class="form-group">
-            <label for="add-eventDateDatepicker">Event Date:</label>
-            <input type="text" class="form-control" id="add-eventDateDatepicker" placeholder="Pick a date">
-        </div>
-
-        
-        <div class="form-group">
-          <label for="add-eventTimeTimepicker">Event Time:</label>
-          <input type="text" class="form-control" id="add-eventTimeTimepicker" placeholder="Pick a time">
-        </div>
-
-        
-        <div class="form-group">
-          <label for="add-datePurchasedDatepicker">Purchased Date:</label>
-          <input type="text" class="form-control" id="add-datePurchasedDatepicker" placeholder="Pick a date">
-        </div>
-  
-        
-        <div class="form-group">
-          <label for="add-eventNotes">Notes</label>
-          <textarea class="form-control" id="add-eventNotes" rows="4"></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Add Inventory Item</button>
-      </form>
-      -->
 
     <h3>Retrieve & Update Inventory Item</h3>
 
@@ -734,6 +692,34 @@
         console.error("Search error:", err);
         suggestions.style.display = 'none';
       }
+  });
+</script>
+
+<script>
+  // Functionality for 'Update' from submit
+  document.getElementById("update-event-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const updatedData = {
+        // event_id is not editable, but just carry in case of future assertions
+        event_id: document.getElementById("readonly-item-event_id").value,
+        event_name: document.getElementById("inventory-search").value,
+        sale_total_proceeds: document.getElementById("update-item-sale-total-proceeds").value,
+        sale_marketplace: document.getElementById("update-item-sale-marketplace").value,
+        notes: document.getElementById("update-item-eventNotes").value,
+        check_price_url: document.getElementById("update-item-check-price-url").value
+    };
+
+    const response = await fetch("/update-inventory", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(updatedData)
+    });
+
+    const result = await response.json();
+    alert(result.message);
   });
 </script>
 
