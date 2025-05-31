@@ -451,9 +451,17 @@
 -->
 
 <script src="{{ url_for('static', filename='js/init-datepicker.js') }}"></script>
+
+<!-- Used in search.js -->
+<script>
+  const search_endpoint = "{{ url_for('search_inventory') }}";
+</script>
+
 <script src="{{ url_for('static', filename='js/search.js') }}"></script>
 <script src="{{ url_for('static', filename='js/forms.js') }}"></script>
 
+
+<!--Fancy Jinja setup for following script-->
 <script>
   const openEventIds = {{ open_event_ids | tojson }};
   const openEventDps = {{ open_event_dps | tojson }};

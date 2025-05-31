@@ -12,6 +12,7 @@ from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, DateTimeField, TimeField, DateField, DecimalField, IntegerField, TextAreaField, FloatField
 from wtforms.validators import DataRequired, Optional
+from marshmallow import Schema, fields, post_load, ValidationError
 
 from config import MY_DB
 
@@ -171,6 +172,30 @@ class CalendarMap:
     def __repr__(self):
         return str(self.mapping)
 
+class InventorySchema(Schema):
+    event_id = fields.Int()
+    event_name = fields.Str()
+    venue = fields.Str()
+    event_date = fields.DateTime()
+    event_time = fields.Time()
+    date_purchased = fields.DateTime()
+    qty_purchased = fields.Decimal()
+    total_cost = fields.Decimal()
+    cost_per = fields.Decimal()
+    section = fields.Str()
+    row = fields.Str()
+    seat = fields.Str()
+    sale_payout_date = fields.DateTime(allow_none=True)
+    self_use_qty = fields.Int(allow_none=True)
+    sale_total_proceeds = fields.Decimal(allow_none=True)
+    sale_marketplace = fields.Str(allow_none=True)
+    notes = fields.Str(allow_none=True)
+    manual_price_track = fields.Float(allow_none=True)
+    check_price_url = fields.Str(allow_none=True)
+
+    @post_load
+    def make_inventory(self, data, **kwargs):
+        return Inventory(**data)
 
 @app.template_filter('formatEventName')
 def _jinja2_filter_event_name(name_text):
@@ -353,6 +378,43 @@ def search_inventory():
     if q:
         suggested = Inventory.query.filter(Inventory.event_name.like(f"%{q}%")).limit(10).all()
         return jsonify([item.to_dict() for item in suggested])
+    
+
+@app.route('/update_inventory', methods=['POST'])
+def update_inventory_item():
+    data = request.get_json()
+    
+    if not data or 'event_id' not in data:
+        return jsonify({"message": "Invalid request"}), 400
+
+    # Fetch item from DB
+    item = Inventory.query.get(data['event_id'])  # NOTE: Not sure about this here
+
+    if not item:
+        return jsonify({"message": "Inventory item not found"}), 404
+
+    # Validate & deserialize incoming data
+    schema = InventorySchema(partial=True)
+
+    try:
+        validated_data = schema.load(data)
+
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+
+    try:
+        # Update fields dynamically
+        for key, value in validated_data.__dict__.items():
+            if key != '_sa_instance_state':  # ignore SQLAlchemy internal state
+                setattr(item, key, value)
+                
+        db.session.commit()
+        return jsonify({"message": "Inventory item updated successfully"}), 200
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Error updating item", "error": str(e)}), 500
+
     
 
 

@@ -12,7 +12,7 @@ document.getElementById("update-event-form").addEventListener("submit", async fu
         check_price_url: document.getElementById("update-item-check-price-url").value
     };
 
-    const response = await fetch("/update-inventory", {
+    const response = await fetch("/update_inventory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData)

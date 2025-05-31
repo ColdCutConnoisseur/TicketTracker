@@ -1,8 +1,6 @@
 
 // Inventory search bar + click interaction logic
 
-const search_endpoint = "{{ url_for('search_inventory') }}";
-
 document.getElementById('inventory-search').addEventListener('input', async function() {
     const query = this.value.trim();
     const suggestions = document.getElementById('suggestions');
