@@ -1,48 +1,77 @@
-// All the Chart.js-related logic, including grouping datapoints and rendering
+document.addEventListener("DOMContentLoaded", function () {
+    // Expect openEventIds and openEventDps to already be defined via a <script> tag in index.html
+    const openEventGroups = {};
 
-console.log("Running chart rendering script...");
+    for (let i = 0; i < openEventIds.length; i++) {
+        const currentID = openEventIds[i];
+        const eventPrices = [];
+        const eventDates = [];
+        const eventSupply = [];
 
-const openEventGroups = {};
+        Object.values(openEventDps).forEach((datapoint) => {
+            const [obsId, price, time, supply] = datapoint;
+            if (obsId === currentID) {
+                eventPrices.push(price);
+                eventDates.push(time);
+                eventSupply.push(supply);
+            }
+        });
 
-for (let i = 0; i < openEventIds.length; i++) {
-    const currentID = openEventIds[i];
-    const eventPrices = [], eventDates = [], eventSupply = [];
+        openEventGroups[currentID] = [eventPrices, eventDates, eventSupply];
 
-    Object.values(openEventDps).forEach(datapoint => {
-        if (datapoint[0] == currentID) {
-            eventPrices.push(datapoint[1]);
-            eventDates.push(datapoint[2]);
-            eventSupply.push(datapoint[3]);
-        }
+    }
+
+    // Render charts
+    console.log(openEventIds);
+    openEventIds.forEach(currentID => {
+        const [eventPrices, eventLabels, eventSupply] = openEventGroups[currentID];
+
+        const priceChart = new Chart(
+            document.getElementById(`priceChart-${currentID}`),
+            {
+                type: 'line',
+                data: {
+                    labels: eventLabels,
+                    datasets: [{
+                        label: 'Price',
+                        backgroundColor: 'rgb(255, 99, 132)',
+                        borderColor: 'rgb(255, 99, 132)',
+                        data: eventPrices,
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            }
+        );
+
+        const supplyChart = new Chart(
+            document.getElementById(`supplyChart-${currentID}`),
+            {
+                type: 'line',
+                data: {
+                    labels: eventLabels,
+                    datasets: [{
+                        label: 'Supply',
+                        backgroundColor: 'rgb(99, 132, 255)',
+                        borderColor: 'rgb(99, 132, 255)',
+                        data: eventSupply,
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            }
+        );
     });
-
-    openEventGroups[currentID] = [eventPrices, eventDates, eventSupply];
-}
-
-for (let i = 0; i < openEventIds.length; i++) {
-    const [prices, labels, supply] = openEventGroups[openEventIds[i]];
-
-    new Chart(document.getElementById(`priceChart-${openEventIds[i]}`), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{ label: 'Price', backgroundColor: 'rgb(255, 99, 132)', borderColor: 'rgb(255, 99, 132)', data: prices }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true } }
-        }
-    });
-
-    new Chart(document.getElementById(`supplyChart-${openEventIds[i]}`), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{ label: 'Section Supply', backgroundColor: 'rgb(255, 99, 132)', borderColor: 'rgb(255, 99, 132)', data: supply }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true } }
-        }
-    });
-}
+});

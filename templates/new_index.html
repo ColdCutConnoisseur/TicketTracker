@@ -145,13 +145,17 @@
 
               <td>{{ supply if supply }}</td> <!--Supply-->
               <td>
-                <button class="btn btn-primary" onclick="showPriceChart({{ c_inv.event_id }}, this);">Show Price Chart</button>
+                <button class="btn btn-primary show-price-btn" data-event-id="{{ c_inv.event_id }}">
+                  Show Price Chart
+                </button>
                 <div style="height: 400px; width: 600px; display: none;" id="priceChartParent-{{ c_inv.event_id }}">
                   <canvas id="priceChart-{{ c_inv.event_id }}"></canvas>
                 </div>
               </td>
               <td>
-                <button class="btn btn-secondary" onclick="showSupplyChart({{ c_inv.event_id }}, this);">Show Supply Chart</button>
+                <button class="btn btn-secondary show-supply-btn" data-event-id="{{ c_inv.event_id }}">
+                  Show Supply Chart
+                </button>
                 <div style="height: 400px; width: 600px; display: none;" id="supplyChartParent-{{ c_inv.event_id }}">
                   <canvas id="supplyChart-{{ c_inv.event_id }}"></canvas>
                 </div>
@@ -467,8 +471,11 @@
   const openEventDps = {{ open_event_dps | tojson }};
 </script>
 
+
 <!-- Uses above defined openEventIds and Dps -->
 <script src="{{ url_for('static', filename='js/custom-charts.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/toggle-charts.js') }}"></script>
 
 {% endblock %}
 
