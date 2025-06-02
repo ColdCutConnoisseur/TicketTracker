@@ -2,6 +2,7 @@
 
 import os
 import datetime
+import traceback
 import calendar
 from sqlalchemy import or_, and_
 
@@ -400,6 +401,10 @@ def update_inventory_item():
         validated_data = schema.load(data)
 
     except ValidationError as err:
+        print("Validation error occurred:", err)
+        traceback.print_exc()
+        print(f"Inspect_attrib: {data["sale_total_proceeds"]}")
+        print(data["sale_total_proceeds"] == "")
         return jsonify(err.messages), 400
 
     try:
@@ -407,7 +412,7 @@ def update_inventory_item():
         for key, value in validated_data.__dict__.items():
             if key != '_sa_instance_state':  # ignore SQLAlchemy internal state
                 setattr(item, key, value)
-                
+
         db.session.commit()
         return jsonify({"message": "Inventory item updated successfully"}), 200
     

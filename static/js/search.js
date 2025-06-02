@@ -28,7 +28,13 @@ document.getElementById('inventory-search').addEventListener('input', async func
             newDiv.onclick = () => {
                 document.getElementById('inventory-search').value = item.event_name;
                 suggestions.style.display = 'none';
+
                 document.getElementById('readonly-item-event_id').value = item.event_id;
+
+                document.getElementById('update-item-qty-purchased').value = item.qty_purchased;
+                document.getElementById('update-item-total-cost').value = item.total_cost;
+                document.getElementById('update-item-cost-per').value = item.cost_per;
+
                 document.getElementById('update-item-self-use-qty').value = item.self_use_qty;
                 document.getElementById('update-item-sale-total-proceeds').value = item.sale_total_proceeds;
                 document.getElementById('update-item-sale-marketplace').value = item.sale_marketplace;
