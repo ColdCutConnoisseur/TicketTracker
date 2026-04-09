@@ -403,7 +403,7 @@ def update_inventory_item():
     except ValidationError as err:
         print("Validation error occurred:", err)
         traceback.print_exc()
-        print(f"Inspect_attrib: {data["sale_total_proceeds"]}")
+        print(f"Inspect_attrib: {data['sale_total_proceeds']}")
         print(data["sale_total_proceeds"] == "")
         return jsonify(err.messages), 400
 
