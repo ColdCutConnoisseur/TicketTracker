@@ -1,0 +1,508 @@
+
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Ticket Inventory{% endblock %}
+
+{% block head %}
+{{ super() }}
+
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<!-- Bootstrap Datepicker CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css" rel="stylesheet">
+<!-- Bootstrap Timepicker CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/css/bootstrap-timepicker.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="main-header">
+  <img src="{{ url_for('static', filename='images/tix_track_logo.png') }}" alt="main-logo" class="inline-logo">
+  TixTracker
+</div>
+
+
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" id="inventory-tabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="closed-inventory-tab" data-bs-toggle="tab" data-bs-target="#closed-inventory" type="button" role="tab" aria-controls="closed-inventory" aria-selected="true">Closed Inventory</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="open-inventory-tab" data-bs-toggle="tab" data-bs-target="#open-inventory" type="button" role="tab" aria-controls="open-inventory" aria-selected="false">Open Inventory</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="event-calendar-tab" data-bs-toggle="tab" data-bs-target="#event-calendar" type="button" role="tab" aria-controls="event-calendar" aria-selected="false">Event Calendar</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="watchlist-tab" data-bs-toggle="tab" data-bs-target="#watchlist" type="button" role="tab" aria-controls="watchlist" aria-selected="false">Watchlist</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="editor-tab" data-bs-toggle="tab" data-bs-target="#editor" type="button" role="tab" aria-controls="editor" aria-selected="false">Editor</button>
+  </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+  <div class="tab-pane active" id="closed-inventory" role="tabpanel" aria-labelledby="closed-inventory-tab">
+
+    <div class="container-fluid" id="closed-inventory-table-container">
+      <!--<h2 id="closed-inventory-label">Closed Inventory</h2>-->
+      <table class="table">
+        <thead>
+          <tr>
+            {% for header in closed_headers %}
+              <th scope="col">{{ header }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+    
+        <tbody>
+          {% for c_inv in closed_inventory %}
+          {% set profit = (c_inv.sale_total_proceeds | noNull) - c_inv.total_cost %}
+          {% set event_return = ((c_inv.sale_total_proceeds - c_inv.total_cost) / c_inv.total_cost) * 100 if c_inv.sale_total_proceeds else 0 %}
+            <tr>
+              <th role="row">{{ c_inv.event_name | formatEventName }}</th>
+              <td>{{ '${0:0.2f}'.format(c_inv.total_cost) }}</td>
+              <td>{{ '${0:0.2f}'.format(c_inv.sale_total_proceeds | noNull) }}</td>
+              {% if profit > 0 %}
+                <td style="color: green;">{{ '${0:0.2f}'.format(profit) }}</td>
+              {% else %}
+                <td style="color: red;">{{ '-${0:0.2f}'.format(profit | abs) }}</td>
+              {% endif %}
+
+              <td>{{ '{0:0.2f}%'.format(event_return) }}</td>
+
+              {% if c_inv.sale_payout_date is none %}
+                <td>Not Sold</td>
+              {% else %}
+                <td>{{ c_inv.sale_payout_date.strftime('%Y-%m-%d') }}</td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+
+  <div class="tab-pane" id="open-inventory" role="tabpanel" aria-labelledby="open-inventory-tab">
+
+    <div class="stats-packager">
+      <div class="d-flex flex-column align-items-start summary-stats-holder">
+        <h2>Summary Stats</h2>
+        {% set exposure = open_inventory | map(attribute='total_cost') | sum %}
+        <div id="exposure-label">Exposure: <span>{{ '${0:0.2f}'.format(exposure) }}</span></div>
+        <div id="mtm-label">Mark-to-Market: <span id="mtm-number">{{ '${0:0.2f}'.format(mtm_count) }}</span></div>
+      </div>
+    </div>
+
+    <div class="container-fluid" id="open-inventory-table-container">
+      <!--<h2 id="open-inventory-label">Open Inventory</h2>-->
+      <table class="table" id="open-inventory-table">
+        <thead>
+          <tr>
+            {% for header in open_headers %}
+              <th class="header-item" scope="col">{{ header }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+
+
+
+        <!--REFERENCE ONLY ["Event Name", "Venue", "Event Date", "Qty Purchased", "Total Cost", "Cost Per", "Section", "Row", "Seat", "Notes", "Manual Price Track", "Check Price URL"]-->
+
+    
+        <tbody>
+          {% for c_inv in open_inventory %}
+
+            {% set supply = price_supply_mapping[c_inv.event_id][1] %}
+            {% set priceUptick = price_supply_mapping[c_inv.event_id][2] %}
+            {% set supplyUptick = price_supply_mapping[c_inv.event_id][3] %}
+
+            <tr>
+              <th role="row">{{ c_inv.event_name | formatEventName }}</th>
+              <td>{{ c_inv.venue }}</td>
+              <td>{{ c_inv.event_date.strftime('%Y-%m-%d') }}</td>
+              <td>{{ '{0:0.2f}'.format(c_inv.qty_purchased) }}</td>
+              <td>{{ '${0:0.2f}'.format(c_inv.total_cost) }}</td>
+              <td>
+                <strong>{{ '${0:0.2f}'.format(c_inv.cost_per) }}</strong>
+              </td>
+              <td>{{ c_inv.section }}</td>
+              <td>{{ c_inv.row }}</td>
+              <td>{{ c_inv.seat }}</td>
+              <td>{{ c_inv.notes if c_inv.notes }}</td>
+    
+              {% if priceUptick %}
+                <td style="color: green;">{{ price_supply_mapping[c_inv.event_id][0] | dollarFormat }}</td> <!--Price-->
+              {% else %}
+                <td style="color: red;">{{ price_supply_mapping[c_inv.event_id][0] | dollarFormat }}</td> <!--Price-->
+              {% endif %}
+
+              <td>{{ supply if supply }}</td> <!--Supply-->
+              <td>
+                <button class="btn btn-primary show-price-btn" data-event-id="{{ c_inv.event_id }}">
+                  Show Price Chart
+                </button>
+                <div style="height: 400px; width: 600px; display: none;" id="priceChartParent-{{ c_inv.event_id }}">
+                  <canvas id="priceChart-{{ c_inv.event_id }}"></canvas>
+                </div>
+              </td>
+              <td>
+                <button class="btn btn-secondary show-supply-btn" data-event-id="{{ c_inv.event_id }}">
+                  Show Supply Chart
+                </button>
+                <div style="height: 400px; width: 600px; display: none;" id="supplyChartParent-{{ c_inv.event_id }}">
+                  <canvas id="supplyChart-{{ c_inv.event_id }}"></canvas>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- WATCHLIST -->
+  <div class="tab-pane" id="watchlist" role="tabpanel" aria-labelledby="watchlist-tab">
+
+    <div class="container" id="current-watchlist-container">
+      <ul id="watchlist-items">
+        <li><strong>Watchlist Items Will Appear Here</strong></li>
+        <li>Theo Von Chicago, IL April 24, 2025</li>
+        <li>Stavros Halkias Chicago Theater</li>
+        <li>Then map these watchlist items to Calendar Object (other tab)</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="tab-pane" id="event-calendar" role="tabpanel" aria-labelledby="event-calendar-tab">
+
+    <div class="container" id="watchlist-calendar-container">
+      <div class="row" id="month-year-row">
+        <div class="col" id="calendar-month-year-display">{{ calendar_mapping_now.month_name }}, {{ calendar_mapping_now.year }}</div>
+      </div>
+      <div class="row" id="day-of-week-row">
+        <div class="col dow-col" id="sunday-row">Sunday</div>
+        <div class="col dow-col" id="monday-row">Monday</div>
+        <div class="col dow-col" id="tuesday-row">Tuesday</div>
+        <div class="col dow-col" id="wednesday-row">Wednesday</div>
+        <div class="col dow-col" id="thursday-row">Thursday</div>
+        <div class="col dow-col" id="friday-row">Friday</div>
+        <div class="col dow-col" id="saturday-row">Saturday</div>
+      </div>
+      {% for week_row in calendar_mapping_now.mapping %}
+          <div class="row date-row">
+            <!--TODO: Also consider adding an 'active' or 'today' element-->
+            {% for wday in week_row %}
+                {% if wday is none %}
+                    <div class="col null-weekday"></div>
+                {% else %}
+                    {% set eventsToday = wday | isCurrentMonthEvent( calendar_mapping_now, this_month_inventory ) %}
+                    <div class="col reg-weekday">
+                      <div class="date-block">
+                        <div class="date-header-strip">
+                          {% if eventsToday | length > 0 %}
+                              <div class="date-circle date-circle-highlighted">{{ wday }}</div>
+                          {% else %}
+                              <div class="date-circle date-circle-normal">{{ wday }}</div>
+                          {% endif %}
+                        </div>
+                        <div class="event-text">
+                          <ul>
+                          {% if eventsToday | length > 0 %}
+                              {% for event in eventsToday %}
+                                  <li>{{ event.event_name | formatEventName }}</li>
+                              {% endfor %}
+                          {% endif %}
+                          </ul>
+                        </div>
+                        
+                      </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+          </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+
+  <div class="tab-pane" id="editor" role="tabpanel" aria-labelledby="editor-tab">
+    
+    <h3>Create Inventory Item</h3>
+
+      <form id="add-inventory-form" method="POST">
+
+        {% if add_form.errors %}
+          <div class="alert alert-danger">
+            <ul>
+              {% for field, errors in add_form.errors.items() %}
+                {% for error in errors %}
+                  <li>{{ field }}: {{ error }}</li>
+                {% endfor %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+
+        {{ add_form.hidden_tag() }}
+
+        <!-- Basic Event Info -->
+        <div class="form-group">
+          {{ add_form.event_name.label(class="form-label") }}
+          {{ add_form.event_name(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.venue.label(class="form-label") }}
+          {{ add_form.venue(class="form-control") }}
+        </div>
+
+        <!-- Event Schedule -->
+        <div class="form-group">
+          {{ add_form.event_date.label(class="form-label") }}
+          {{ add_form.event_date(class="form-control", id="event-datepicker", type="date") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.event_time.label(class="form-label") }}
+          {{ add_form.event_time(class="form-control", id="event-timepicker") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.date_purchased.label(class="form-label") }}
+          {{ add_form.date_purchased(class="form-control", id="date-purchased-datepicker", type="date") }}
+        </div>
+
+        <!-- Purchase Details -->
+        <div class="form-group">
+          {{ add_form.qty_purchased.label(class="form-label") }}
+          {{ add_form.qty_purchased(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.total_cost.label(class="form-label") }}
+          {{ add_form.total_cost(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.cost_per.label(class="form-label") }}
+          {{ add_form.cost_per(class="form-control") }}
+        </div>
+
+        <!-- Seating -->
+        <div class="form-group">
+          {{ add_form.section.label(class="form-label") }}
+          {{ add_form.section(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.row.label(class="form-label") }}
+          {{ add_form.row(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.seat.label(class="form-label") }}
+          {{ add_form.seat(class="form-control") }}
+        </div>
+
+        <!-- Optional Fields -->
+        <div class="form-group">
+          {{ add_form.notes.label(class="form-label") }}
+          {{ add_form.notes(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ add_form.check_price_url.label(class="form-label") }}
+          {{ add_form.check_price_url(class="form-control") }}
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary mt-3">Add Inventory Item</button>
+      </form>
+
+
+    <h3>Retrieve & Update Inventory Item</h3>
+
+      <form id="update-event-form">
+        <div class="form-group">
+          <label for="inventory-search">Search Inventory By Event Name: </label>
+          <input type="text" class="form-control" id="inventory-search" placeholder="Search Inventory Items">
+          <div id="suggestions"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="update-item-self-use-qty">Event ID</label>
+          <input type="text" class="form-control" id="readonly-item-event_id" readonly>
+        </div>
+
+
+
+
+
+        <!-- NEW -->
+        <div class="form-group">
+          <label for="update-item-qty-purchased">Quantity Purchased</label>
+          <input type="text" class="form-control" id="update-item-qty-purchased">
+        </div>
+
+        <!-- NEW -->
+        <div class="form-group">
+          <label for="update-item-total-cost">Total Cost</label>
+          <input type="text" class="form-control" id="update-item-total-cost">
+        </div>
+
+        <!-- NEW -->
+        <div class="form-group">
+          <label for="update-item-cost-per">Cost Per</label>
+          <input type="text" class="form-control" id="update-item-cost-per">
+        </div>
+
+
+
+
+
+
+
+        <div class="form-group">
+          <label for="update-item-self-use-qty">Self Use Quantity</label>
+          <input type="text" class="form-control" id="update-item-self-use-qty">
+        </div>
+
+        <div class="form-group">
+          <label for="update-item-sale-total-proceeds">Total Proceeds</label>
+          <input type="text" class="form-control" id="update-item-sale-total-proceeds">
+        </div>
+
+        <div class="form-group">
+          <label for="update-item-sale-marketplace">Sale Marketplace</label>
+          <input type="text" class="form-control" id="update-item-sale-marketplace">
+        </div>
+
+        <div class="form-group">
+          <label for="update-item-eventNotes">Notes</label>
+          <textarea class="form-control" id="update-item-eventNotes" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="update-item-check-price-url">Check-Price-URL</label>
+          <input type="text" class="form-control" id="update-item-check-price-url">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Inventory Item</button>
+        
+      </form>
+
+    <h3>Delete Inventory Item</h3>
+
+      <p>Coming soon....maybe</p>
+
+    <h3>Bulk Insert From File</h3>
+      <p>Also coming soon....maybe</p>
+      <form>
+        <div class="form-group">
+          <label for="bulkAddFileDialog">Bulk Insert File</label>
+          <input type="file" class="form-control-file" id="bulkAddFileDialog">
+        </div>
+      </form>
+
+  </div>
+
+</div>
+
+
+<!--
+<nav>
+  <div class="nav nav-tabs" id="inventory-nav-tab" role="tablist">
+    <button class="nav-link active" id="nav-closed-inventry-tab" data-bs-toggle="tab" data-bs-target="#nav-closed-inventory" type="button" role="tab" aria-controls="nav-closed-inventory" aria-selected="true">
+      Closed Inventory
+      <a href="#nav-closed-inventory"></a>
+    </button>
+    <button class="nav-link" id="nav-open-inventory-tab" data-bs-toggle="tab" data-bs-target="#nav-open-inventory" type="button" role="tab" aria-controls="nav-open-inventory" aria-selected="false">Open Inventory</button>
+    <button class="nav-link" id="nav-watchlist-tab" data-bs-toggle="tab" data-bs-target="#nav-watchlist" type="button" role="tab" aria-controls="nav-watchlist" aria-selected="false">Watchlist</button>
+  </div>
+</nav>
+
+<div class="tab-content" id="nav-tabContent">
+  <div class="tab-pane fade show active" id="nav-closed-inventory" role="tabpanel" aria-labelledby="nav-closed-inventory-tab">
+    
+    <h3>Yooooo</h3>
+
+    
+    
+
+  </div>
+
+  <div class="tab-pane fade" id="nav-open-inventory" role="tabpanel" aria-labelledby="nav-open-inventory-tab">
+    <h3>Changed. Yep.</h3>
+  </div>
+
+  <div class="tab-pane fade" id="nav-watchlist" role="tabpanel" aria-labelledby="nav-watchlist-tab">
+    <h3>Again. yep.</h3>
+
+  </div>
+
+</div>
+
+-->
+
+{% endblock %}
+
+
+
+{% block scripts %}
+{{ super() }}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap 5.3.3 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<!-- Bootstrap Datepicker JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
+
+<!-- Bootstrap Timepicker JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/js/bootstrap-timepicker.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Include Chart.js Date Adapter with date-fns (version 1.x)
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@1.0.0/dist/chartjs-adapter-date-fns.min.js"></script>
+-->
+<!-- Include date-fns (version 2.x)
+<script src="https://cdn.jsdelivr.net/npm/date-fns@2.28.0/index.js"></script>
+-->
+
+<script src="{{ url_for('static', filename='js/init-datepicker.js') }}"></script>
+
+<!-- Used in search.js -->
+<script>
+  const search_endpoint = "{{ url_for('search_inventory') }}";
+</script>
+
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+<script src="{{ url_for('static', filename='js/forms.js') }}"></script>
+
+<!--Fancy Jinja setup for following script-->
+<script>
+  const openEventIds = {{ open_event_ids | tojson }};
+  const openEventDps = {{ open_event_dps | tojson }};
+</script>
+
+
+<!-- Uses above defined openEventIds and Dps -->
+<script src="{{ url_for('static', filename='js/custom-charts.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/toggle-charts.js') }}"></script>
+
+{% endblock %}
+
